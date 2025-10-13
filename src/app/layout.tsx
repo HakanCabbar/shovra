@@ -1,5 +1,6 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { Toaster } from "react-hot-toast";
 
 import "./styles/globals.css";
 
@@ -19,6 +20,7 @@ export default function RootLayout({
         <Header />
         <main className="bg-white flex-1 px-4 py-8 md:px-8 lg:px-16">
           {children}
+          <Toaster position="top-right" />
         </main>
         <Footer />
       </body>
