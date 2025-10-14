@@ -3,6 +3,7 @@ import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
 import "./styles/globals.css";
+import Providers from "./providers";
 
 export const metadata = {
   title: "Shovra",
@@ -19,7 +20,7 @@ export default function RootLayout({
       <body className="bg-gray-100 text-slate-900 min-h-screen flex flex-col">
         <Header />
         <main className="bg-white flex-1 px-4 py-8 md:px-8 lg:px-16">
-          {children}
+          <Providers>{children}</Providers>
           <Toaster position="top-right" />
         </main>
         <Footer />

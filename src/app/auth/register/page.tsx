@@ -12,20 +12,20 @@ const registerSchema = yup
   .object({
     email: yup
       .string()
-      .email("Geçerli bir email girin")
-      .required("Email gerekli"),
+      .email("Please enter a valid email address")
+      .required("Email is required"),
     password: yup
       .string()
-      .min(6, "Şifre en az 6 karakter olmalı")
-      .required("Şifre gerekli"),
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
     confirmPassword: yup
       .string()
-      .oneOf([yup.ref("password")], "Şifreler eşleşmiyor")
-      .required("Şifre doğrulama gerekli"),
+      .oneOf([yup.ref("password")], "Passwords do not match")
+      .required("Password confirmation is required"),
     name: yup
       .string()
-      .min(2, "İsim en az 2 karakter olmalı")
-      .required("İsim gerekli"),
+      .min(2, "Name must be at least 2 characters")
+      .required("Name is required"),
   })
   .required();
 
@@ -56,12 +56,12 @@ export default function RegisterPage() {
       }
 
       toast.success(
-        "Kayıt başarılı! Lütfen emailinizi onaylayın ve sonra giriş yapın."
+        "Registration successful! Please verify your email before logging in."
       );
 
-      router.push("/auth/login"); // signup sonrası login sayfasına yönlendir
+      router.push("/auth/login");
     } catch (err) {
-      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error("An unexpected error occurred. Please try again.");
     }
   };
 

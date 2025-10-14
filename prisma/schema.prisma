@@ -17,23 +17,33 @@ model User {
   orders    Order[]
 }
 
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now())
+  products  Product[]  // Bir kategori birden fazla ürüne sahip olabilir
+}
+
 model Product {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   price       Float
   imageUrl    String?
-  createdAt   DateTime @default(now())
+  is_active   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+
   favorites   Favorite[]
   cartItems   CartItem[]
-
-  @@map("product") // <- DB’deki gerçek tablo ismi
 }
 
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
-  productId String
+  productId String 
   user      User     @relation(fields: [userId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
