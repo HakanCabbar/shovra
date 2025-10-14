@@ -32,13 +32,12 @@ model Product {
   imageUrl    String?
   is_active   Boolean   @default(true)
   createdAt   DateTime  @default(now())
-
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id])
-
   favorites   Favorite[]
   cartItems   CartItem[]
 }
+
 
 model Favorite {
   id        String   @id @default(cuid())

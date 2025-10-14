@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -32,7 +31,6 @@ const registerSchema = yup
 type RegisterFormInputs = yup.InferType<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const supabase = createClientComponentClient();
   const router = useRouter();
 
   const {
@@ -45,23 +43,26 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormInputs) => {
     try {
-      const { data: signUpData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          name: data.name,
+        }),
       });
 
-      if (error) {
-        toast.error(error.message);
-        return;
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Registration successful! Please verify your email.");
+        router.push("/auth/login");
+      } else {
+        toast.error(result.error || "Registration failed");
       }
-
-      toast.success(
-        "Registration successful! Please verify your email before logging in."
-      );
-
-      router.push("/auth/login");
     } catch (err) {
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred.");
     }
   };
 
