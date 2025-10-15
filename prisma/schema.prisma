@@ -7,62 +7,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  role      String    @default("user")
-  createdAt DateTime  @default(now())
-  favorites Favorite[]
-  cartItems CartItem[]
-  orders    Order[]
-}
-
 model Category {
   id        String     @id @default(cuid())
   name      String
   createdAt DateTime   @default(now())
-  products  Product[]  // Bir kategori birden fazla ürüne sahip olabilir
+  products  Product[]
 }
 
 model Product {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
   description String?
   price       Float
   imageUrl    String?
-  is_active   Boolean   @default(true)
-  createdAt   DateTime  @default(now())
+  is_active   Boolean    @default(true)
+  createdAt   DateTime   @default(now())
   categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
+  category    Category?  @relation(fields: [categoryId], references: [id])
   favorites   Favorite[]
   cartItems   CartItem[]
 }
 
+model Role {
+  id        String   @id @default(cuid())
+  userId    String   // Supabase auth.users.id
+  name      String
+  createdAt DateTime @default(now())
+}
 
 model Favorite {
   id        String   @id @default(cuid())
-  userId    String
-  productId String 
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String   // Supabase auth.users.id
+  productId String
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
 }
 
 model CartItem {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   // Supabase auth.users.id
   productId String
   quantity  Int      @default(1)
-  user      User     @relation(fields: [userId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
 }
 
 model Order {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   // Supabase auth.users.id
   total     Float
   status    String   @default("pending")
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
 }
+

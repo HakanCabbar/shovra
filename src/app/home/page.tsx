@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 
 interface Product {
   id: string;
@@ -14,6 +15,7 @@ interface Product {
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
+  const [session, setSession] = useState<any | null>(null);
 
   const {
     data: products = [],
@@ -39,7 +41,7 @@ export default function ProductsPage() {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Silme işlemi tamamlandı");
     },
@@ -48,13 +50,26 @@ export default function ProductsPage() {
     },
   });
 
+  // ✅ session fetch
+  useEffect(() => {
+    const fetchSession = async () => {
+      const res = await fetch("/api/session");
+      const data = await res.json();
+      setSession(data.session ?? null);
+      console.log(data.session, "session");
+    };
+    fetchSession();
+  }, []);
+
   if (isLoading) return <p className="text-center mt-10">Yükleniyor...</p>;
-  if (isError)
-    return <p className="text-center mt-10 text-red-600">Hata oluştu!</p>;
+  if (isError) return <p className="text-center mt-10 text-red-600">Hata oluştu!</p>;
 
   return (
     <main className="max-w-5xl mx-auto py-12 px-4">
       <h1 className="text-4xl font-bold mb-8 text-center">Products</h1>
+      <p className="text-center mb-6">
+        {session ? `Hoşgeldin ${session.user.id}` : "Giriş yapılmamış"}
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((p) => (
@@ -73,22 +88,17 @@ export default function ProductsPage() {
                 />
               </div>
             )}
-
             <h2 className="font-semibold text-lg">{p.name}</h2>
-            <p className="text-sm text-slate-600 mt-1 line-clamp-3">
-              {p.description}
-            </p>
+            <p className="text-sm text-slate-600 mt-1 line-clamp-3">{p.description}</p>
             <p className="mt-2 font-medium text-black">${p.price.toFixed(2)}</p>
 
-            {true && (
-              <button
-                onClick={() => deleteMutation.mutate(p.id)}
-                disabled={deleteMutation.status === "pending"}
-                className="mt-3 px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
-              >
-                {deleteMutation.status === "pending" ? "Siliniyor..." : "Sil"}
-              </button>
-            )}
+            <button
+              onClick={() => deleteMutation.mutate(p.id)}
+              disabled={deleteMutation.status === "pending"}
+              className="mt-3 px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+            >
+              {deleteMutation.status === "pending" ? "Siliniyor..." : "Sil"}
+            </button>
           </article>
         ))}
       </div>
