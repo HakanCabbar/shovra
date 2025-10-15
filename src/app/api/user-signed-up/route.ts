@@ -8,7 +8,16 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const userId = body.user.id;
+
+  // 👈 Supabase Auth webhook payload'undan user ID
+  const userId = body.record?.id;
+
+  if (!userId) {
+    return new Response(JSON.stringify({ status: "error", message: "userId not found", body }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   await supabase
     .from("user_roles")
