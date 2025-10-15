@@ -1,16 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextRequest } from "next/server";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const body = req.body;
+export async function POST(req: NextRequest) {
+  const body = await req.json();
   const userId = body.user.id;
 
-  await supabase.from("user_roles").insert({ userId, roleId: "3519238b-0ff7-4aff-9989-5bf3c57a3aa2" });
+  await supabase
+    .from("user_roles")
+    .insert({ userId, roleId: "3519238b-0ff7-4aff-9989-5bf3c57a3aa2" });
 
-  res.status(200).json({ status: "ok" });
+  return new Response(JSON.stringify({ status: "ok" }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
