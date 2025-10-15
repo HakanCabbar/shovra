@@ -8,20 +8,23 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-
-  // 👈 Supabase Auth webhook payload'undan user ID
   const userId = body.record?.id;
 
   if (!userId) {
-    return new Response(JSON.stringify({ status: "error", message: "userId not found", body }), {
+    console.error("userId bulunamadı:", body);
+    return new Response(JSON.stringify({ status: "error", message: "userId not found" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
     });
   }
 
-  await supabase
+  const { error } = await supabase
     .from("user_roles")
     .insert({ userId, roleId: "3519238b-0ff7-4aff-9989-5bf3c57a3aa2" });
+
+  if (error) {
+    console.error("Supabase insert hatası:", error);
+    return new Response(JSON.stringify({ status: "error", error }), { status: 500 });
+  }
 
   return new Response(JSON.stringify({ status: "ok" }), {
     status: 200,
