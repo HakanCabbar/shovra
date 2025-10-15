@@ -29,11 +29,19 @@ model Product {
 }
 
 model Role {
-  id        String   @id @default(cuid())
-  userId    String   // Supabase auth.users.id
+  id        String      @id @default(cuid())
   name      String
+  createdAt DateTime    @default(now())
+}
+
+
+model userRoles {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
   createdAt DateTime @default(now())
 }
+
 
 model Favorite {
   id        String   @id @default(cuid())
@@ -59,4 +67,3 @@ model Order {
   status    String   @default("pending")
   createdAt DateTime @default(now())
 }
-
