@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { error } = await supabase
-    .from("user_roles")
+    .from("userRoles")
     .insert({ userId, roleId: "3519238b-0ff7-4aff-9989-5bf3c57a3aa2" });
 
   if (error) {
