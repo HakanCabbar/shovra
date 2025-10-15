@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -12,27 +11,26 @@ const registerSchema = yup
   .object({
     email: yup
       .string()
-      .email("Geçerli bir email girin")
-      .required("Email gerekli"),
+      .email("Please enter a valid email address")
+      .required("Email is required"),
     password: yup
       .string()
-      .min(6, "Şifre en az 6 karakter olmalı")
-      .required("Şifre gerekli"),
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
     confirmPassword: yup
       .string()
-      .oneOf([yup.ref("password")], "Şifreler eşleşmiyor")
-      .required("Şifre doğrulama gerekli"),
+      .oneOf([yup.ref("password")], "Passwords do not match")
+      .required("Password confirmation is required"),
     name: yup
       .string()
-      .min(2, "İsim en az 2 karakter olmalı")
-      .required("İsim gerekli"),
+      .min(2, "Name must be at least 2 characters")
+      .required("Name is required"),
   })
   .required();
 
 type RegisterFormInputs = yup.InferType<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const supabase = createClientComponentClient();
   const router = useRouter();
 
   const {
@@ -45,23 +43,26 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormInputs) => {
     try {
-      const { data: signUpData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          name: data.name,
+        }),
       });
 
-      if (error) {
-        toast.error(error.message);
-        return;
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Registration successful! Please verify your email.");
+        router.push("/auth/login");
+      } else {
+        toast.error(result.error || "Registration failed");
       }
-
-      toast.success(
-        "Kayıt başarılı! Lütfen emailinizi onaylayın ve sonra giriş yapın."
-      );
-
-      router.push("/auth/login"); // signup sonrası login sayfasına yönlendir
     } catch (err) {
-      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error("An unexpected error occurred.");
     }
   };
 

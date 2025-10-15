@@ -10,12 +10,12 @@ import { toast } from "react-hot-toast";
 const loginSchema = yup.object({
   email: yup
     .string()
-    .email("Geçerli bir email girin")
-    .required("Email gerekli"),
+    .email("Enter a valid email")
+    .required("Email is required"),
   password: yup
     .string()
-    .min(6, "Şifre en az 6 karakter olmalı")
-    .required("Şifre gerekli"),
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
 });
 
 type LoginFormInputs = yup.InferType<typeof loginSchema>;
@@ -43,10 +43,10 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success("Giriş başarılı!");
+      toast.success("Login successful!");
       window.location.href = "/home";
     } catch (err) {
-      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error("An unexpected error occurred. Please try again.");
     }
   };
 
