@@ -23,8 +23,6 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  console.log(user)
-
   const clearAllCookies = () => {
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
