@@ -1,21 +1,18 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { NextResponse } from "next/server";
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { NextResponse } from 'next/server'
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const { id } = params
 
   try {
-    const { error } = await supabaseAdmin.from("Product").delete().eq("id", id);
+    const { error } = await supabaseAdmin.from('Product').delete().eq('id', id)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
