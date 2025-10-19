@@ -5,17 +5,18 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { toast } from 'react-hot-toast'
+import Link from 'next/link'
 
 // Yup validation schema
 const registerSchema = yup
   .object({
+    name: yup.string().min(2, 'Name must be at least 2 characters').required('Name is required'),
     email: yup.string().email('Please enter a valid email address').required('Email is required'),
     password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
     confirmPassword: yup
       .string()
       .oneOf([yup.ref('password')], 'Passwords do not match')
-      .required('Password confirmation is required'),
-    name: yup.string().min(2, 'Name must be at least 2 characters').required('Name is required')
+      .required('Password confirmation is required')
   })
   .required()
 
@@ -38,9 +39,9 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: data.name,
           email: data.email,
-          password: data.password,
-          name: data.name
+          password: data.password
         })
       })
 
@@ -58,51 +59,75 @@ export default function RegisterPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 max-w-sm mx-auto mt-20'>
-      <h1 className='text-2xl font-bold text-center'>Register</h1>
-
-      <div>
-        <input
-          type='text'
-          placeholder='Name'
-          {...register('name')}
-          className='w-full p-2 border rounded text-black placeholder-gray-400'
-        />
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[500px] flex flex-col justify-between gap-4'
+    >
+      <div className='text-center'>
+        <h1 className='text-3xl font-bold text-gray-800'>Register</h1>
+        <p className='text-gray-500 mt-2'>Create your account to get started.</p>
       </div>
 
-      <div>
-        <input
-          type='email'
-          placeholder='Email'
-          {...register('email')}
-          className='w-full p-2 border rounded  text-black placeholder-gray-400'
-        />
-        {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+      {/* Inputs */}
+      <div className='flex-1 flex flex-col justify-center space-y-4'>
+        <div className='space-y-2'>
+          <input
+            type='text'
+            placeholder='Name'
+            {...register('name')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.name && <p className='text-red-500 text-sm'>{errors.name.message}</p>}
+        </div>
+
+        <div className='space-y-2'>
+          <input
+            type='email'
+            placeholder='Email'
+            {...register('email')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+        </div>
+
+        <div className='space-y-2'>
+          <input
+            type='password'
+            placeholder='Password'
+            {...register('password')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
+        </div>
+
+        <div className='space-y-2'>
+          <input
+            type='password'
+            placeholder='Confirm Password'
+            {...register('confirmPassword')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.confirmPassword && <p className='text-red-500 text-sm'>{errors.confirmPassword.message}</p>}
+        </div>
       </div>
 
-      <div>
-        <input
-          type='password'
-          placeholder='Password'
-          {...register('password')}
-          className='w-full p-2 border rounded  text-black placeholder-gray-400'
-        />
-        {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
-      </div>
+      {/* Button + Link */}
+      <div className='space-y-4'>
+        <button
+          type='submit'
+          disabled={isSubmitting}
+          className='w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold p-3 rounded-lg transition-colors'
+        >
+          {isSubmitting ? 'Registering...' : 'Register'}
+        </button>
 
-      <div>
-        <input
-          type='password'
-          placeholder='Confirm Password'
-          {...register('confirmPassword')}
-          className='w-full p-2 border rounded  text-black placeholder-gray-400'
-        />
-        {errors.confirmPassword && <p className='text-red-500 text-sm'>{errors.confirmPassword.message}</p>}
+        <p className='text-center text-gray-500'>
+          Already have an account?{' '}
+          <Link href='/auth/login' className='text-indigo-600 hover:underline font-medium'>
+            Login
+          </Link>
+        </p>
       </div>
-
-      <button type='submit' disabled={isSubmitting} className='w-full bg-black text-white p-2 rounded'>
-        {isSubmitting ? 'Registering...' : 'Register'}
-      </button>
     </form>
   )
 }

@@ -8,12 +8,23 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
+      colors: {
+        black: '#000000',
+        white: '#FFFFFF',
+        red: {
+          DEFAULT: '#E50914', // Netflix kırmızıya yakın örnek
+          light: '#FF4C4C',
+          dark: '#B80000'
+        },
+        yellow: {
+          DEFAULT: '#FFD700',
+          light: '#FFE94D',
+          dark: '#BBA300'
+        }
       }
     }
   },
   plugins: []
 }
+
 export default config
