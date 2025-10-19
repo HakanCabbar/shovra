@@ -49,12 +49,22 @@ export default function LoginPage() {
       <h1 className='text-2xl font-bold text-center'>Login</h1>
 
       <div>
-        <input type='email' placeholder='Email' {...register('email')} className='w-full p-2 border rounded' />
+        <input
+          type='email'
+          placeholder='Email'
+          {...register('email')}
+          className='w-full p-2 border rounded  text-black placeholder-gray-400'
+        />
         {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
       </div>
 
       <div>
-        <input type='password' placeholder='Password' {...register('password')} className='w-full p-2 border rounded' />
+        <input
+          type='password'
+          placeholder='Password'
+          {...register('password')}
+          className='w-full p-2 border rounded  text-black placeholder-gray-400'
+        />
         {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
       </div>
 

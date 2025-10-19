@@ -62,17 +62,31 @@ export default function RegisterPage() {
       <h1 className='text-2xl font-bold text-center'>Register</h1>
 
       <div>
-        <input type='text' placeholder='Name' {...register('name')} className='w-full p-2 border rounded' />
-        {errors.name && <p className='text-red-500 text-sm'>{errors.name.message}</p>}
+        <input
+          type='text'
+          placeholder='Name'
+          {...register('name')}
+          className='w-full p-2 border rounded text-black placeholder-gray-400'
+        />
       </div>
 
       <div>
-        <input type='email' placeholder='Email' {...register('email')} className='w-full p-2 border rounded' />
+        <input
+          type='email'
+          placeholder='Email'
+          {...register('email')}
+          className='w-full p-2 border rounded  text-black placeholder-gray-400'
+        />
         {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
       </div>
 
       <div>
-        <input type='password' placeholder='Password' {...register('password')} className='w-full p-2 border rounded' />
+        <input
+          type='password'
+          placeholder='Password'
+          {...register('password')}
+          className='w-full p-2 border rounded  text-black placeholder-gray-400'
+        />
         {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
       </div>
 
@@ -81,7 +95,7 @@ export default function RegisterPage() {
           type='password'
           placeholder='Confirm Password'
           {...register('confirmPassword')}
-          className='w-full p-2 border rounded'
+          className='w-full p-2 border rounded  text-black placeholder-gray-400'
         />
         {errors.confirmPassword && <p className='text-red-500 text-sm'>{errors.confirmPassword.message}</p>}
       </div>
