@@ -1,9 +1,10 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ProductCard from '../components/ui/ProductCard'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { Button } from 'app/components/ui/button'
 
 export type Product = {
   id: string
@@ -15,8 +16,11 @@ export type Product = {
 }
 
 export default function FavoritesPage() {
+  const queryClient = useQueryClient()
   const [cartLoadingIds, setCartLoadingIds] = useState<string[]>([])
   const [favoriteLoadingIds, setFavoriteLoadingIds] = useState<string[]>([])
+
+  const previousFavorites = queryClient.getQueryData<Product[]>(['favorites'])
 
   const {
     data: products,
@@ -76,60 +80,53 @@ export default function FavoritesPage() {
     }
   }
 
-  if (isLoading) return <p className='text-center mt-10 text-gray-600 animate-pulse'>Loading your favorites...</p>
-  if (isError) return <p className='text-center mt-10 text-red-600'>An error occurred while loading your favorites.</p>
-  if (!products || products.length === 0)
+  if (isError) {
+    return <p className='text-center mt-10 text-red-600'>An error occurred while loading your favorites.</p>
+  }
+
+  if (!isLoading && (!products || products.length === 0)) {
     return (
       <div className='text-center mt-20'>
         <p className='text-lg text-gray-600 mb-4'>You don’t have any favorite products yet 💔</p>
         <p className='text-sm text-gray-400'>Add products you like to your favorites and see them here.</p>
       </div>
     )
+  }
+
+  // Dinamik skeleton sayısı
+  const skeletonCount = previousFavorites?.length || 6
 
   return (
-    <main className='max-w-6xl mx-auto py-12 px-4'>
+    <main className='max-w-6xl mx-auto'>
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>My Favorites ⭐</h1>
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-        {products.map(product => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            actionButtons={
-              <div className='flex gap-2 mt-2 justify-between'>
-                {/* Sepete ekle / çıkar */}
-                <button
-                  onClick={e => {
-                    e.stopPropagation() // 🔹 Bu satır eklenmeli
-                    handleToggleCart(product.id, product.isInCart)
-                  }}
-                  disabled={cartLoadingIds.includes(product.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium ${
-                    product.isInCart
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-black text-white hover:bg-gray-800'
-                  } transition`}
-                >
-                  {cartLoadingIds.includes(product.id)
-                    ? 'Processing...'
-                    : product.isInCart
-                      ? 'Remove from Cart'
-                      : 'Add to Cart'}
-                </button>
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
+        {isLoading
+          ? Array.from({ length: skeletonCount }).map((_, i) => <ProductCard key={i} isLoading />)
+          : products?.map(product => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                actionButtons={
+                  <div className='flex gap-2 mt-2 justify-between w-full'>
+                    <Button
+                      variant={product.isInCart ? 'red' : 'black'}
+                      loading={cartLoadingIds.includes(product.id)}
+                      onClick={() => handleToggleCart(product.id, product.isInCart)}
+                    >
+                      {product.isInCart ? 'Remove From Cart' : 'Add to Cart'}
+                    </Button>
 
-                <button
-                  onClick={e => {
-                    e.stopPropagation() // 🔹 Bu satır eklenmeli
-                    handleRemoveFavorite(product.id)
-                  }}
-                  disabled={favoriteLoadingIds.includes(product.id)}
-                  className='flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition'
-                >
-                  {favoriteLoadingIds.includes(product.id) ? 'Removing...' : 'Remove from Favorites'}
-                </button>
-              </div>
-            }
-          />
-        ))}
+                    <Button
+                      variant='yellow'
+                      loading={favoriteLoadingIds.includes(product.id)}
+                      onClick={() => handleRemoveFavorite(product.id)}
+                    >
+                      Remove From Favorites
+                    </Button>
+                  </div>
+                }
+              />
+            ))}
       </div>
     </main>
   )

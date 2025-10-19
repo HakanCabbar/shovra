@@ -1,13 +1,22 @@
 'use client'
 
-import Image from 'next/image'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
-import { FaPlus, FaMinus, FaTrash, FaSpinner } from 'react-icons/fa'
+import { FaTrash } from 'react-icons/fa'
 import Link from 'next/link'
 import { useState } from 'react'
+import { Button } from '../components/ui/button'
+import { CartItem } from '../components/ui/CartItem'
+import Image from 'next/image'
 
-type CartItem = {
+type CartData = {
+  id: string
+  items: CartItemType[]
+  totalPrice: number
+  totalQuantity: number
+}
+
+export type CartItemType = {
   id: string
   productId: string
   quantity: number
@@ -17,16 +26,15 @@ type CartItem = {
     price: number
     imageUrl?: string
   }
-}
-
-type CartData = {
-  id: string
-  items: CartItem[]
-  totalPrice: number
-  totalQuantity: number
+  loadingItemId?: string | null
+  onUpdateQuantity: (productId: string, action: 'increase' | 'decrease') => void
+  onRemove?: (productId: string) => void
 }
 
 export default function CartPage() {
+  const queryClient = useQueryClient()
+  const previousCart = queryClient.getQueryData<CartData>(['cart'])
+
   const {
     data: cart,
     refetch,
@@ -55,16 +63,14 @@ export default function CartPage() {
       if (!res.ok) throw new Error('Failed to update cart')
       return res.json()
     },
-    onSuccess: data => {
+    onSuccess: () => {
       toast.success('Cart updated successfully')
       refetch()
     },
     onError: (err: any) => {
       toast.error(err.message || 'Something went wrong')
     },
-    onSettled: () => {
-      setLoadingItemId(null)
-    }
+    onSettled: () => setLoadingItemId(null)
   })
 
   const clearCart = useMutation({
@@ -78,30 +84,31 @@ export default function CartPage() {
       toast.success('Cart cleared successfully')
       refetch()
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to clear cart')
-    },
-    onSettled: () => {
-      setClearing(false)
-    }
+    onError: (err: any) => toast.error(err.message || 'Failed to clear cart'),
+    onSettled: () => setClearing(false)
   })
 
-  if (isLoading) return <p className='text-center mt-10'>Loading...</p>
-  if (isError || !cart) return <p className='text-center mt-10 text-red-600'>Cart not found!</p>
+  // 🧠 Skeleton sayısını dinamik belirle
+  const skeletonCount = previousCart?.items?.length || 3
+
+  if (!isLoading && (isError || !cart)) {
+    return <p className='text-center mt-10 text-red-600'>Cart not found!</p>
+  }
 
   return (
-    <main className='max-w-4xl mx-auto py-12 px-4'>
+    <main className='max-w-5xl mx-auto py-12 px-4'>
       <h1 className='text-3xl font-bold mb-6'>Your Cart</h1>
 
-      {cart.items.length === 0 && (
+      {/* 🧱 Loading state → skeleton render */}
+      {isLoading ? (
+        <div className='flex flex-col gap-6'>
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <CartItem key={i} loading={true} />
+          ))}
+        </div>
+      ) : cart?.items.length === 0 ? (
         <div className='flex flex-col items-center justify-center py-20 text-center'>
-          <Image
-            src='/images/empty-cart.svg'
-            alt='Empty cart'
-            className='w-40 h-40 mb-6 opacity-80'
-            width={12}
-            height={12}
-          />
+          <Image src='/images/empty-cart.svg' alt='Empty cart' width={160} height={160} />
           <h2 className='text-2xl font-semibold mb-2'>Your cart is empty</h2>
           <p className='text-gray-500 max-w-sm mb-6'>
             Looks like you haven’t added anything yet. Start exploring our products and find something you love!
@@ -110,61 +117,33 @@ export default function CartPage() {
             Browse Products
           </Link>
         </div>
-      )}
-
-      <div className='flex flex-col gap-6'>
-        {cart.items.map(item => (
-          <div key={item.id} className='flex items-center gap-4 border-b pb-4'>
-            <div className='w-24 h-24 relative'>
-              {item.product.imageUrl ? (
-                <Image src={item.product.imageUrl} alt={item.product.name} fill className='object-cover rounded' />
-              ) : (
-                <div className='bg-gray-200 w-full h-full flex items-center justify-center rounded'>No Image</div>
-              )}
-            </div>
-
-            <div className='flex-1'>
-              <h2 className='text-lg font-semibold'>{item.product.name}</h2>
-              <p className='text-gray-700'>${item.product.price.toFixed(2)}</p>
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <button
-                disabled={loadingItemId === item.productId}
-                onClick={() => updateQuantity.mutate({ productId: item.productId, action: 'decrease' })}
-                className='bg-gray-200 p-2 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                {loadingItemId === item.productId ? <FaSpinner className='animate-spin' /> : <FaMinus />}
-              </button>
-              <span className='px-3'>{item.quantity}</span>
-              <button
-                disabled={loadingItemId === item.productId}
-                onClick={() => updateQuantity.mutate({ productId: item.productId, action: 'increase' })}
-                className='bg-gray-200 p-2 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                {loadingItemId === item.productId ? <FaSpinner className='animate-spin' /> : <FaPlus />}
-              </button>
-            </div>
-
-            <div className='ml-6 font-semibold'>${(item.product.price * item.quantity).toFixed(2)}</div>
-          </div>
-        ))}
-      </div>
-
-      {cart.items.length > 0 && (
+      ) : (
         <>
-          <div className='mt-8 flex justify-end items-center gap-6'>
-            <span className='text-lg font-semibold'>Total:</span>
-            <span className='text-2xl font-bold'>${cart.totalPrice.toFixed(2)}</span>
+          <div className='flex flex-col gap-6'>
+            {cart?.items.map(item => (
+              <CartItem
+                key={item.id}
+                item={item}
+                loadingItemId={loadingItemId}
+                onUpdateQuantity={(productId, action) => updateQuantity.mutate({ productId, action })}
+                onRemove={() => null}
+              />
+            ))}
           </div>
-          <div className='mt-4 flex justify-end'>
-            <button
-              disabled={clearing}
+
+          <div className='mt-8 flex flex-col sm:flex-row justify-between items-center gap-4'>
+            <div className='text-lg sm:text-xl font-semibold text-gray-800'>
+              Total: <span className='text-2xl font-bold'>${cart?.totalPrice.toFixed(2)}</span>
+            </div>
+            <Button
+              variant='red'
+              icon={<FaTrash />}
+              loading={clearing}
               onClick={() => clearCart.mutate()}
-              className='bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='mt-2 sm:mt-0'
             >
-              {clearing ? <FaSpinner className='animate-spin' /> : <FaTrash />} Clear Cart
-            </button>
+              Clear Cart
+            </Button>
           </div>
         </>
       )}

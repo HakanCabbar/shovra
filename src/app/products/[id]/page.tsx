@@ -4,7 +4,9 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
-import { FaHeart, FaShoppingCart } from 'react-icons/fa'
+import { FaRegStar, FaShoppingCart, FaStar } from 'react-icons/fa'
+import { Button } from 'app/components/ui/button'
+import { PageSpinner } from '@/app/components/ui/page-spinner'
 
 type Category = {
   id: string
@@ -28,6 +30,7 @@ interface Props {
 
 export default function ProductDetailPage({ params }: Props) {
   const [addingToCart, setAddingToCart] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   const { id } = params
 
@@ -47,7 +50,6 @@ export default function ProductDetailPage({ params }: Props) {
 
   const handleToggleCart = async () => {
     if (!product) return
-
     try {
       setAddingToCart(true)
       const res = await fetch('/api/cart-items', {
@@ -55,14 +57,12 @@ export default function ProductDetailPage({ params }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id })
       })
-
       const data = await res.json()
-
       if (res.ok) {
-        toast.success(data.message)
+        toast.success(data.message || (product.isInCart ? 'Removed from cart!' : 'Added to cart!'))
         refetch()
       } else {
-        toast.error(data.error || 'An error occurred')
+        toast.error(data.error || 'Failed to update cart!')
       }
     } catch {
       toast.error('Failed to update cart!')
@@ -73,28 +73,28 @@ export default function ProductDetailPage({ params }: Props) {
 
   const handleToggleFavorite = async () => {
     if (!product) return
-
     try {
+      setFavoriteLoading(true)
       const res = await fetch('/api/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id })
       })
-
       const data = await res.json()
-
       if (res.ok) {
-        toast.success(data.message)
+        toast.success(data.message || (product.isProductFavorited ? 'Removed from favorites!' : 'Added to favorites!'))
         refetch()
       } else {
-        toast.error(data.error || 'An error occurred')
+        toast.error(data.error || 'Failed to update favorites!')
       }
     } catch {
       toast.error('Failed to update favorites!')
+    } finally {
+      setFavoriteLoading(false)
     }
   }
 
-  if (isLoading) return <p className='text-center mt-10'>Loading...</p>
+  if (isLoading) return <PageSpinner size={40} />
   if (isError || !product) return <p className='text-center mt-10 text-red-600'>Product not found!</p>
 
   return (
@@ -117,31 +117,24 @@ export default function ProductDetailPage({ params }: Props) {
 
           <div className='flex gap-4 items-center'>
             {/* Cart Button */}
-            <button
+            <Button
+              variant={product.isInCart ? 'red' : 'black'}
+              loading={addingToCart}
+              icon={<FaShoppingCart className='w-4 h-4' />}
               onClick={handleToggleCart}
-              disabled={addingToCart}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                product.isInCart
-                  ? 'bg-white border border-red-600 text-red-600 hover:bg-red-50'
-                  : 'bg-black text-white hover:bg-gray-800'
-              }`}
             >
-              <FaShoppingCart />
-              {addingToCart ? 'Processing...' : product.isInCart ? 'In Cart' : 'Add to Cart'}
-            </button>
+              {product.isInCart ? 'In Cart' : 'Add to Cart'}
+            </Button>
 
             {/* Favorite Button */}
-            <button
+            <Button
+              variant='yellow'
+              loading={favoriteLoading}
+              icon={product.isProductFavorited ? <FaStar className='w-4 h-4' /> : <FaRegStar className='w-4 h-4' />}
               onClick={handleToggleFavorite}
-              className={`p-2 rounded-full transition text-2xl ${
-                product.isProductFavorited
-                  ? 'text-yellow-400'
-                  : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
-              }`}
-              aria-label={product.isProductFavorited ? 'Remove from favorites' : 'Add to favorites'}
             >
-              {product.isProductFavorited ? '⭐' : '☆'}
-            </button>
+              {product.isProductFavorited ? 'Favorited' : 'Add to Favorites'}
+            </Button>
           </div>
         </div>
       </div>

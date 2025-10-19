@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { toast } from 'react-hot-toast'
+import Link from 'next/link'
 
 // Yup validation schema
 const loginSchema = yup.object({
@@ -45,32 +46,56 @@ export default function LoginPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 max-w-sm mx-auto mt-20'>
-      <h1 className='text-2xl font-bold text-center'>Login</h1>
-
-      <div>
-        <input
-          type='email'
-          placeholder='Email'
-          {...register('email')}
-          className='w-full p-2 border rounded  text-black placeholder-gray-400'
-        />
-        {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[400px] flex flex-col justify-between'
+    >
+      {/* Title */}
+      <div className='text-center'>
+        <h1 className='text-3xl font-bold text-gray-800'>Login</h1>
+        <p className='text-gray-500 mt-2'>Welcome back! Please login to your account.</p>
       </div>
 
-      <div>
-        <input
-          type='password'
-          placeholder='Password'
-          {...register('password')}
-          className='w-full p-2 border rounded  text-black placeholder-gray-400'
-        />
-        {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
+      {/* Inputs */}
+      <div className='flex-1 flex flex-col justify-center space-y-4'>
+        <div className='space-y-2'>
+          <input
+            type='email'
+            placeholder='Email'
+            {...register('email')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+        </div>
+
+        <div className='space-y-2'>
+          <input
+            type='password'
+            placeholder='Password'
+            {...register('password')}
+            className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
+          />
+          {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
+        </div>
       </div>
 
-      <button type='submit' disabled={isSubmitting} className='w-full bg-black text-white p-2 rounded'>
-        {isSubmitting ? 'Logging in...' : 'Login'}
-      </button>
+      {/* Button + Link */}
+      <div className='space-y-4'>
+        <button
+          type='submit'
+          disabled={isSubmitting}
+          className='w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold p-3 rounded-lg transition-colors'
+        >
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
+
+        <p className='text-center text-gray-500'>
+          <p>Don&apos;t have an account?</p>
+          <Link href='/auth/register' className='text-indigo-600 hover:underline font-medium'>
+            Sign up
+          </Link>
+        </p>
+      </div>
     </form>
   )
 }

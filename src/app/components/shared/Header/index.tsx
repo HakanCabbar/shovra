@@ -44,7 +44,7 @@ export default function Header() {
       } catch (err) {
         console.warn('cookie clear error:', err)
       }
-      setUser(null) // user state sıfırla
+      setUser(null)
       setMenuOpen(false)
       router.push('/auth/login')
     }
@@ -62,34 +62,35 @@ export default function Header() {
   return (
     <header className='bg-black text-white p-4 flex justify-between items-center relative'>
       {/* Logo / Home Link */}
-      <Link href='/home' className='font-bold text-xl hover:text-gray-300 transition'>
+      <Link
+        href='/home'
+        className='font-bold text-3xl text-white hover:text-white transition-all duration-300 hover:drop-shadow-[0_0_10px_white]'
+      >
         Shovra
       </Link>
 
       {/* Navigation */}
       <nav>
-        <ul className='flex gap-6 items-center'>
-          {/* Normal kullanıcı menüleri */}
+        <ul className='flex gap-6 items-center font-medium text-white'>
           {user?.role && (
-            <li>
-              <Link href='/favorites' className='hover:text-gray-300 transition'>
-                Favorites
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link href='/favorites' className='hover:text-gray-300 transition'>
+                  Favorites
+                </Link>
+              </li>
+
+              <li>
+                <Link href='/cart' className='hover:text-gray-300 transition'>
+                  Cart
+                </Link>
+              </li>
+            </>
           )}
 
-          {user?.role && (
-            <li>
-              <Link href='/cart' className='hover:text-gray-300 transition'>
-                Cart
-              </Link>
-            </li>
-          )}
-
-          {/* Admin için Add Product */}
           {user?.role === 'admin' && (
             <li>
-              <Link href='/admin/products/create' className='hover:text-gray-300 transition font-semibold'>
+              <Link href='/admin/products/create' className='hover:text-gray-300 transition'>
                 Add Product
               </Link>
             </li>
@@ -103,14 +104,14 @@ export default function Header() {
                   onClick={() => setMenuOpen(prev => !prev)}
                   aria-haspopup='true'
                   aria-expanded={menuOpen}
-                  className='w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold hover:bg-gray-600 transition focus:outline-none'
+                  className='w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-medium hover:bg-gray-600 transition focus:outline-none'
                 >
                   {getInitials(user.email)}
                 </button>
 
-                {/* Dropdown: scale+fade animation */}
+                {/* Dropdown */}
                 <div
-                  className={`origin-top-right absolute right-0 mt-3 w-56 bg-white text-black rounded-xl shadow-xl py-3 z-50 transform transition-all duration-200 ${
+                  className={`origin-top-right absolute right-0 mt-3 w-56 bg-white text-black rounded-xl shadow-lg py-3 z-50 transform transition-all duration-200 ${
                     menuOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
                   }`}
                 >
@@ -122,10 +123,9 @@ export default function Header() {
                   <div className='flex flex-col py-1'>
                     <Link
                       href='/profile'
-                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-sm'
+                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-sm font-medium'
                       onClick={() => setMenuOpen(false)}
                     >
-                      {/* simple user svg */}
                       <svg
                         xmlns='http://www.w3.org/2000/svg'
                         className='w-4 h-4'
@@ -146,7 +146,7 @@ export default function Header() {
 
                     <button
                       onClick={handleLogout}
-                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-left text-sm'
+                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-left text-sm font-medium'
                     >
                       <svg
                         xmlns='http://www.w3.org/2000/svg'
@@ -165,7 +165,7 @@ export default function Header() {
                 </div>
               </>
             ) : (
-              <Link href='/auth/login' className='hover:text-gray-300 transition'>
+              <Link href='/auth/login' className='hover:text-gray-300 transition font-medium'>
                 Login
               </Link>
             )}

@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 import { useApp } from '../providers'
 import ProductCard from '../components/ui/ProductCard'
 import { useState } from 'react'
+import { Button } from '../components/ui/button'
+import { Trash2 } from 'lucide-react'
 
 type Product = {
   id: string
@@ -19,8 +21,10 @@ export default function ProductsPage() {
   const queryClient = useQueryClient()
   const [deletingIds, setDeletingIds] = useState<string[]>([])
 
+  const previousProducts = queryClient.getQueryData<Product[]>(['products'])
+
   const {
-    data: products = [],
+    data: products,
     isLoading,
     isError
   } = useQuery<Product[]>({
@@ -61,32 +65,31 @@ export default function ProductsPage() {
     })
   }
 
-  if (isLoading) return <p className='text-center mt-10'>Loading...</p>
   if (isError) return <p className='text-center mt-10 text-red-600'>An error occurred!</p>
+
+  const skeletonCount = previousProducts?.length || 8
 
   return (
     <main className='max-w-6xl mx-auto py-12 px-4'>
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-        {products.map(p => (
-          <ProductCard
-            key={p.id}
-            product={p as any}
-            actionButtons={
-              user?.role === 'admin' && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    handleDelete(p.id)
-                  }}
-                  disabled={deletingIds.includes(p.id)}
-                  className='flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition'
-                >
-                  {deletingIds.includes(p.id) ? 'Deleting...' : 'Delete'}
-                </button>
-              )
-            }
-          />
-        ))}
+        {isLoading
+          ? Array.from({ length: skeletonCount }).map((_, i) => <ProductCard key={i} isLoading />)
+          : products?.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p as any}
+                deleteButton={
+                  user?.role === 'admin' && (
+                    <Button
+                      variant='red'
+                      icon={<Trash2 className='w-3.5 h-3.5' />}
+                      loading={deletingIds.includes(p.id)}
+                      onClick={() => handleDelete(p.id)}
+                    />
+                  )
+                }
+              />
+            ))}
       </div>
     </main>
   )
