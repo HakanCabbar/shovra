@@ -14,7 +14,6 @@ export async function GET() {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
-
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()

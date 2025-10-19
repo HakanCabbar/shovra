@@ -8,62 +8,69 @@ datasource db {
 }
 
 model Category {
-  id        String     @id @default(cuid())
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime   @default(now())
+  createdAt DateTime  @default(now())
   products  Product[]
 }
 
 model Product {
-  id          String     @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  imageUrl    String?
-  is_active   Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  categoryId  String?
-  category    Category?  @relation(fields: [categoryId], references: [id])
-  favorites   Favorite[]
-  cartItems   CartItem[]
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  description   String?
+  price         Float
+  imageUrl      String?
+  is_active     Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  categoryId    String          @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartItems     CartItem[]
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UserFavorites UserFavorites[]
 }
 
 model Role {
-  id        String      @id @default(cuid())
+  id        String   @id @default(uuid())
   name      String
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
 }
-
 
 model userRoles {
-  id        String   @id @default(cuid())
-  userId    String
-  roleId    String
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
   createdAt DateTime @default(now())
 }
 
-
-model Favorite {
-  id        String   @id @default(cuid())
-  userId    String   // Supabase auth.users.id
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId       String      @db.Uuid
+  totalPrice   Float       @default(0)
+  totalQuantity Int        @default(0)
+  items        CartItem[]  @relation("CartItems")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model CartItem {
-  id        String   @id @default(cuid())
-  userId    String   // Supabase auth.users.id
-  productId String
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String   @db.Uuid
+  productId String   @db.Uuid
   quantity  Int      @default(1)
   product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
+  cart      Cart     @relation("CartItems", fields: [cartId], references: [id])
 }
-
 model Order {
-  id        String   @id @default(cuid())
-  userId    String   // Supabase auth.users.id
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
   total     Float
   status    String   @default("pending")
   createdAt DateTime @default(now())
+}
+
+model UserFavorites {
+  id        String   @id(map: "Favorite_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Favorite_productId_fkey")
 }

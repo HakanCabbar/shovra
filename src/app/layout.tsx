@@ -1,7 +1,7 @@
 // app/layout.tsx
 import './styles/globals.css'
-import Header from './components/Header'
-import Footer from './components/Footer'
+import Header from './components/shared/Header'
+import Footer from './components/shared/Footer'
 import { Toaster } from 'react-hot-toast'
 import Providers from './providers'
 
