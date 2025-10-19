@@ -16,7 +16,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const product = await prisma.product.findUnique({
       where: { id },
-      include: { category: true, UserFavorites: true }
+      include: {
+        category: true,
+        UserFavorites: true,
+        cartItems: { include: { cart: true } }
+      }
     })
 
     if (!product) {
@@ -24,30 +28,17 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 
     const isProductFavorited = userId ? product.UserFavorites.some(fav => fav.userId === userId) : false
+    const isInCart = userId ? product.cartItems.some(item => item.cart.userId === userId) : false
 
-    const { UserFavorites, ...productData } = product
+    const { UserFavorites, cartItems, ...productData } = product
 
     const managedProduct = {
       ...productData,
-      isProductFavorited
+      isProductFavorited,
+      isInCart
     }
 
     return NextResponse.json(managedProduct)
-  } catch (err: any) {
-    console.error(err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
-}
-
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params
-
-  try {
-    const product = await prisma.product.delete({
-      where: { id }
-    })
-
-    return NextResponse.json({ success: true, product })
   } catch (err: any) {
     console.error(err)
     return NextResponse.json({ error: err.message }, { status: 500 })
