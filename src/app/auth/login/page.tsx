@@ -48,7 +48,7 @@ export default function LoginPage() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[400px] flex flex-col justify-between'
+      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[450px] flex flex-col justify-between gap-2'
     >
       {/* Title */}
       <div className='text-center'>
@@ -65,7 +65,7 @@ export default function LoginPage() {
             {...register('email')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+          {errors.email && <p className='text-red-500 text-xs'>{errors.email.message}</p>}
         </div>
 
         <div className='space-y-2'>
@@ -75,7 +75,7 @@ export default function LoginPage() {
             {...register('password')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
+          {errors.password && <p className='text-red-500 text-xs'>{errors.password.message}</p>}
         </div>
       </div>
 

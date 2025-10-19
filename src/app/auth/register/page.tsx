@@ -61,7 +61,7 @@ export default function RegisterPage() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[500px] flex flex-col justify-between gap-4'
+      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[625px] flex flex-col justify-between gap-4'
     >
       <div className='text-center'>
         <h1 className='text-3xl font-bold text-gray-800'>Register</h1>
@@ -77,7 +77,7 @@ export default function RegisterPage() {
             {...register('name')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.name && <p className='text-red-500 text-sm'>{errors.name.message}</p>}
+          {errors.name && <p className='text-red-500 text-xs'>{errors.name.message}</p>}
         </div>
 
         <div className='space-y-2'>
@@ -87,7 +87,7 @@ export default function RegisterPage() {
             {...register('email')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.email && <p className='text-red-500 text-sm'>{errors.email.message}</p>}
+          {errors.email && <p className='text-red-500 text-xs'>{errors.email.message}</p>}
         </div>
 
         <div className='space-y-2'>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
             {...register('password')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.password && <p className='text-red-500 text-sm'>{errors.password.message}</p>}
+          {errors.password && <p className='text-red-500 text-xs'>{errors.password.message}</p>}
         </div>
 
         <div className='space-y-2'>
@@ -107,11 +107,10 @@ export default function RegisterPage() {
             {...register('confirmPassword')}
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
-          {errors.confirmPassword && <p className='text-red-500 text-sm'>{errors.confirmPassword.message}</p>}
+          {errors.confirmPassword && <p className='text-red-500 text-xs'>{errors.confirmPassword.message}</p>}
         </div>
       </div>
 
-      {/* Button + Link */}
       <div className='space-y-4'>
         <button
           type='submit'
