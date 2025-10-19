@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
-import { FaHeart, FaRegHeart, FaShoppingCart } from 'react-icons/fa'
+import { FaHeart, FaShoppingCart } from 'react-icons/fa'
 
 type Category = {
   id: string
@@ -17,21 +17,20 @@ type Product = {
   description: string
   price: number
   imageUrl?: string
-  images?: string[]
   category?: Category
   isProductFavorited: boolean
+  isInCart: boolean
 }
+
 interface Props {
   params: { id: string }
 }
 
 export default function ProductDetailPage({ params }: Props) {
-  // ** States
   const [addingToCart, setAddingToCart] = useState(false)
 
   const { id } = params
 
-  // ** Hooks
   const {
     data: product,
     isLoading,
@@ -41,19 +40,32 @@ export default function ProductDetailPage({ params }: Props) {
     queryKey: ['product', id],
     queryFn: async () => {
       const res = await fetch(`/api/products/${id}`)
-      if (!res.ok) throw new Error('Ürün yüklenemedi')
+      if (!res.ok) throw new Error('Failed to load product')
       return res.json()
     }
   })
 
-  const handleAddToCart = async () => {
+  const handleToggleCart = async () => {
     if (!product) return
+
     try {
       setAddingToCart(true)
-      await new Promise(resolve => setTimeout(resolve, 500)) // demo delay
-      toast.success(`${product.name} sepete eklendi!`)
-    } catch (err) {
-      toast.error('Sepete ekleme başarısız!')
+      const res = await fetch('/api/cart-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success(data.message)
+        refetch()
+      } else {
+        toast.error(data.error || 'An error occurred')
+      }
+    } catch {
+      toast.error('Failed to update cart!')
     } finally {
       setAddingToCart(false)
     }
@@ -75,15 +87,15 @@ export default function ProductDetailPage({ params }: Props) {
         toast.success(data.message)
         refetch()
       } else {
-        toast.error(data.error || 'Bir hata oluştu')
+        toast.error(data.error || 'An error occurred')
       }
-    } catch (err) {
-      toast.error('Favorilere ekleme başarısız!')
+    } catch {
+      toast.error('Failed to update favorites!')
     }
   }
 
-  if (isLoading) return <p className='text-center mt-10'>Yükleniyor...</p>
-  if (isError || !product) return <p className='text-center mt-10 text-red-600'>Ürün bulunamadı!</p>
+  if (isLoading) return <p className='text-center mt-10'>Loading...</p>
+  if (isError || !product) return <p className='text-center mt-10 text-red-600'>Product not found!</p>
 
   return (
     <main className='max-w-5xl mx-auto py-12 px-4'>
@@ -104,40 +116,35 @@ export default function ProductDetailPage({ params }: Props) {
           <p className='text-gray-700 mb-6'>{product.description}</p>
 
           <div className='flex gap-4 items-center'>
-            {/* Sepete ekle: ikon + yazı */}
+            {/* Cart Button */}
             <button
-              onClick={handleAddToCart}
+              onClick={handleToggleCart}
               disabled={addingToCart}
-              className='flex items-center gap-2 bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition'
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                product.isInCart
+                  ? 'bg-white border border-red-600 text-red-600 hover:bg-red-50'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
             >
               <FaShoppingCart />
-              {addingToCart ? 'Ekleniyor...' : 'Sepete Ekle'}
+              {addingToCart ? 'Processing...' : product.isInCart ? 'In Cart' : 'Add to Cart'}
             </button>
 
+            {/* Favorite Button */}
             <button
               onClick={handleToggleFavorite}
-              className={`p-2 rounded-full transition text-xl ${
+              className={`p-2 rounded-full transition text-2xl ${
                 product.isProductFavorited
-                  ? 'text-yellow-400' // favori ise sarı yıldız
-                  : 'text-gray-400 hover:text-gray-600' // favori değilse gri yıldız
+                  ? 'text-yellow-400'
+                  : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
               }`}
-              aria-label={product.isProductFavorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+              aria-label={product.isProductFavorited ? 'Remove from favorites' : 'Add to favorites'}
             >
               {product.isProductFavorited ? '⭐' : '☆'}
             </button>
           </div>
         </div>
       </div>
-
-      {product.images && product.images.length > 0 && (
-        <div className='mt-8 grid grid-cols-4 gap-4'>
-          {product.images.map((img, idx) => (
-            <div key={idx} className='relative w-full h-24 rounded overflow-hidden shadow-sm'>
-              <Image src={img} alt={`Extra ${idx}`} fill className='object-cover' />
-            </div>
-          ))}
-        </div>
-      )}
     </main>
   )
 }

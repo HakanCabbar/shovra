@@ -53,3 +53,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const { id } = await req.json() // body üzerinden alıyoruz
+
+    if (!id) {
+      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
+    }
+
+    // Ürün herhangi bir sepette mi kontrol et
+    const existingCartItem = await prisma.cartItem.findFirst({
+      where: { productId: id }
+    })
+
+    if (existingCartItem) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `The product you are trying to delete is currently in a user's cart.`
+        },
+        { status: 400 }
+      )
+    }
+
+    // Sepette değilse sil
+    const product = await prisma.product.delete({
+      where: { id }
+    })
+
+    return NextResponse.json({ success: true, product })
+  } catch (err: any) {
+    console.error(err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

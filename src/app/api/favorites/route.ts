@@ -57,13 +57,27 @@ export async function GET() {
 
     const userId = session.user.id
 
-    const favorites = await prisma.userFavorites.findMany({
+    // Kullanıcının sepetini al
+    const cart = await prisma.cart.findFirst({
       where: { userId },
-      include: { Product: true } // ürün detaylarını da çek
+      include: { items: true }
     })
 
-    // sadece product verisini döndür
-    const products = favorites.map(fav => fav.Product)
+    // Favori ürünleri al
+    const favorites = await prisma.userFavorites.findMany({
+      where: { userId },
+      include: { Product: true }
+    })
+
+    // Her ürünün sepette olup olmadığını ekle
+    const products = favorites.map(fav => {
+      const product = fav.Product
+      const isInCart = cart?.items.some(item => item.productId === product.id) ?? false
+      return {
+        ...product,
+        isInCart
+      }
+    })
 
     return NextResponse.json(products)
   } catch (err: any) {
