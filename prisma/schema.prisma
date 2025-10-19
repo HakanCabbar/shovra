@@ -28,43 +28,36 @@ model Product {
   UserFavorites UserFavorites[]
 }
 
-model Role {
-  id        String   @id @default(uuid())
+model Roles {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   createdAt DateTime @default(now())
 }
 
-model userRoles {
-  id        String   @id @default(uuid())
+model UserRoles {
   userId    String   @db.Uuid
   roleId    String   @db.Uuid
   createdAt DateTime @default(now())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 }
 
 model Cart {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId       String      @db.Uuid
-  totalPrice   Float       @default(0)
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @db.Uuid
+  totalPrice    Float      @default(0)
   totalQuantity Int        @default(0)
-  items        CartItem[]  @relation("CartItems")
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  items         CartItem[] @relation("CartItems")
 }
 
 model CartItem {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cartId    String   @db.Uuid
-  productId String   @db.Uuid
-  quantity  Int      @default(1)
-  product   Product  @relation(fields: [productId], references: [id])
-  cart      Cart     @relation("CartItems", fields: [cartId], references: [id])
-}
-model Order {
-  id        String   @id @default(uuid())
-  userId    String   @db.Uuid
-  total     Float
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String  @db.Uuid
+  productId String  @db.Uuid
+  quantity  Int     @default(1)
+  cart      Cart    @relation("CartItems", fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model UserFavorites {

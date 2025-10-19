@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
 
   const id = randomUUID()
 
-  const { error } = await supabase.from('userRoles').insert({
+  const { error } = await supabase.from('UserRoles').insert({
     id,
     userId,
-    roleId: '3519238b-0ff7-4aff-9989-5bf3c57a3aa2'
+    roleId: '996fbc49-fd2f-4bdf-a589-f0ef7e9b9fb4'
   })
   if (error) {
     console.error('Supabase insert hatası:', error)

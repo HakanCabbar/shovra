@@ -22,10 +22,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let role: string | null = null
 
   if (userData?.id) {
-    const { data: userRole } = await supabase.from('userRoles').select('roleId').eq('userId', userData.id).single()
+    const { data: userRole } = await supabase.from('UserRoles').select('roleId').eq('userId', userData.id).single()
 
     if (userRole?.roleId) {
-      const { data: roleRow } = await supabase.from('Role').select('name').eq('id', userRole.roleId).single()
+      const { data: roleRow } = await supabase.from('Roles').select('name').eq('id', userRole.roleId).single()
       role = roleRow?.name ?? null
     }
   }
