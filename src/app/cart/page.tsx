@@ -88,7 +88,6 @@ export default function CartPage() {
     onSettled: () => setClearing(false)
   })
 
-  // 🧠 Skeleton sayısını dinamik belirle
   const skeletonCount = previousCart?.items?.length || 3
 
   if (!isLoading && (isError || !cart)) {
@@ -96,10 +95,8 @@ export default function CartPage() {
   }
 
   return (
-    <main className='max-w-5xl mx-auto py-12 px-4'>
-      <h1 className='text-3xl font-bold mb-6'>Your Cart</h1>
-
-      {/* 🧱 Loading state → skeleton render */}
+    <main className='max-w-6xl mx-auto'>
+      <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Cart</h1>
       {isLoading ? (
         <div className='flex flex-col gap-6'>
           {Array.from({ length: skeletonCount }).map((_, i) => (
@@ -107,7 +104,7 @@ export default function CartPage() {
           ))}
         </div>
       ) : cart?.items.length === 0 ? (
-        <div className='flex flex-col items-center justify-center py-20 text-center'>
+        <div className='flex flex-col items-center justify-center text-center mt-20 gap-4'>
           <Image src='/images/empty-cart.svg' alt='Empty cart' width={160} height={160} />
           <h2 className='text-2xl font-semibold mb-2'>Your cart is empty</h2>
           <p className='text-gray-500 max-w-sm mb-6'>

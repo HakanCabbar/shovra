@@ -98,7 +98,8 @@ export default function ProductDetailPage({ params }: Props) {
   if (isError || !product) return <p className='text-center mt-10 text-red-600'>Product not found!</p>
 
   return (
-    <main className='max-w-5xl mx-auto py-12 px-4'>
+    <main className='max-w-6xl mx-auto'>
+      <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Product Detail</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
         {/* Left: Image */}
         <div className='relative w-full h-96 rounded-lg overflow-hidden shadow-md'>
@@ -115,7 +116,7 @@ export default function ProductDetailPage({ params }: Props) {
           <p className='text-2xl text-black font-semibold mb-4'>${product.price.toFixed(2)}</p>
           <p className='text-gray-700 mb-6'>{product.description}</p>
 
-          <div className='flex gap-4 items-center'>
+          <div className='flex gap-4 items-center justify-between sm:justify-start '>
             {/* Cart Button */}
             <Button
               variant={product.isInCart ? 'red' : 'black'}

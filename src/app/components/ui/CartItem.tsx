@@ -19,15 +19,15 @@ export const CartItem = ({ item, loadingItemId, onUpdateQuantity, onRemove, load
   const { productId, quantity, product } = item!
 
   return (
-    <div className='flex sm:gap-4 gap-4 border rounded-xl p-4 shadow-sm hover:shadow-md transition'>
-      <div className='h-full'>
+    <div className='flex sm:gap-4 gap-4 border rounded-xl p-2 shadow-sm hover:shadow-md transition'>
+      <div>
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.name}
             width={128}
             height={128}
-            className='object-cover rounded-xl'
+            className='object-cover rounded-xl h-full'
           />
         ) : (
           <div className='bg-gray-200 w-[128px] h-[128px] flex items-center justify-center rounded-xl text-gray-500 font-semibold'>
@@ -43,7 +43,6 @@ export const CartItem = ({ item, loadingItemId, onUpdateQuantity, onRemove, load
             <p className='text-gray-700 font-medium'>${product.price.toFixed(2)}</p>
           </div>
 
-          {/* Artı/eksi butonları */}
           <div className='flex items-center gap-2 mt-2'>
             <button
               disabled={loadingItemId === productId}

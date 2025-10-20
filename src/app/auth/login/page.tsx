@@ -73,6 +73,7 @@ export default function LoginPage() {
             type='password'
             placeholder='Password'
             {...register('password')}
+            autoComplete='new-password'
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
           {errors.password && <p className='text-red-500 text-xs'>{errors.password.message}</p>}
@@ -90,7 +91,7 @@ export default function LoginPage() {
         </button>
 
         <p className='text-center text-gray-500'>
-          <p>Don&apos;t have an account?</p>
+          Don&apos;t have an account?{' '}
           <Link href='/auth/register' className='text-indigo-600 hover:underline font-medium'>
             Sign up
           </Link>

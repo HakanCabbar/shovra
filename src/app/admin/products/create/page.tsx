@@ -5,9 +5,11 @@ export default async function CreateProductPage() {
   const categories = await prisma.category.findMany()
 
   return (
-    <main className='max-w-lg mx-auto py-12'>
-      <h1 className='text-3xl font-bold mb-6'>Create Product</h1>
-      <ProductForm categories={categories} />
+    <main className='max-w-6xl mx-auto'>
+      <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Create Product</h1>
+      <div className='max-w-lg mx-auto mt-12 bg-white p-6 rounded-2xl shadow-md'>
+        <ProductForm categories={categories} />
+      </div>
     </main>
   )
 }

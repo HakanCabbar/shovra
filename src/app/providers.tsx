@@ -4,6 +4,7 @@ import { ReactNode, useState, createContext, useContext } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 type UserData = {
+  name: string | null
   id: string | null
   email: string | null
   role: string | null

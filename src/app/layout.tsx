@@ -32,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   const user = {
     id: userData?.id ?? null,
+    name: userData?.user_metadata?.name,
     email: userData?.email ?? null,
     role
   }

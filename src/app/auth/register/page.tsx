@@ -68,7 +68,6 @@ export default function RegisterPage() {
         <p className='text-gray-500 mt-2'>Create your account to get started.</p>
       </div>
 
-      {/* Inputs */}
       <div className='flex-1 flex flex-col justify-center space-y-4'>
         <div className='space-y-2'>
           <input
@@ -95,6 +94,7 @@ export default function RegisterPage() {
             type='password'
             placeholder='Password'
             {...register('password')}
+            autoComplete='new-password'
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
           {errors.password && <p className='text-red-500 text-xs'>{errors.password.message}</p>}
@@ -105,12 +105,12 @@ export default function RegisterPage() {
             type='password'
             placeholder='Confirm Password'
             {...register('confirmPassword')}
+            autoComplete='new-password'
             className='w-full p-3 border rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400'
           />
           {errors.confirmPassword && <p className='text-red-500 text-xs'>{errors.confirmPassword.message}</p>}
         </div>
       </div>
-
       <div className='space-y-4'>
         <button
           type='submit'

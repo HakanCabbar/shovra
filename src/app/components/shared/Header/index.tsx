@@ -5,18 +5,20 @@ import { useApp } from '@/app/providers'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { FiMenu, FiX } from 'react-icons/fi'
 
 export default function Header() {
   const { user, setUser } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLLIElement | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -50,18 +52,29 @@ export default function Header() {
     }
   }
 
-  const getInitials = (email?: string | null) => {
-    if (!email) return 'U'
-    const namePart = email.split('@')[0]
-    const parts = namePart.split(/[\.\-_]/).filter(Boolean)
-    if (parts.length === 0) return email[0].toUpperCase()
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-    return (parts[0][0] + parts[1][0]).toUpperCase()
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name && name.trim().length > 0) {
+      const parts = name.trim().split(' ').filter(Boolean)
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+
+    // name yoksa emailden tahmin
+    if (email) {
+      const namePart = email.split('@')[0]
+      const parts = namePart.split(/[\.\-_]/).filter(Boolean)
+      if (parts.length === 0) return email[0].toUpperCase()
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+
+    // hiçbir şey yoksa U
+    return 'U'
   }
 
   return (
-    <header className='bg-black text-white p-4 flex justify-between items-center relative'>
-      {/* Logo / Home Link */}
+    <header className='bg-black text-white px-4 py-3 flex justify-between items-center relative'>
+      {/* Logo */}
       <Link
         href='/home'
         className='font-bold text-3xl text-white hover:text-white transition-all duration-300 hover:drop-shadow-[0_0_10px_white]'
@@ -69,108 +82,138 @@ export default function Header() {
         Shovra
       </Link>
 
-      {/* Navigation */}
-      <nav>
-        <ul className='flex gap-6 items-center font-medium text-white'>
-          {user?.role && (
+      {/* Hamburger (mobile) */}
+      <button
+        onClick={() => setMenuOpen(prev => !prev)}
+        className='lg:hidden text-white text-2xl focus:outline-none'
+        aria-label='Toggle menu'
+      >
+        {menuOpen ? <FiX /> : <FiMenu />}
+      </button>
+
+      {/* Nav Links */}
+      <nav
+        className={`${
+          menuOpen
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-4 pointer-events-none lg:pointer-events-auto lg:opacity-100 lg:translate-y-0'
+        } 
+        absolute lg:static top-[64px] left-0 w-full lg:w-auto bg-black lg:bg-transparent 
+        flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6 py-4 lg:py-0 px-6 lg:px-0 transition-all duration-300 z-40`}
+      >
+        {user?.role && (
+          <>
+            <Link
+              href='/favorites'
+              onClick={() => setMenuOpen(false)}
+              className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+            >
+              Favorites
+            </Link>
+            <Link
+              href='/cart'
+              onClick={() => setMenuOpen(false)}
+              className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+            >
+              Cart
+            </Link>
+          </>
+        )}
+
+        {user?.role === 'admin' && (
+          <Link
+            href='/admin/products/create'
+            onClick={() => setMenuOpen(false)}
+            className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+          >
+            Create Product
+          </Link>
+        )}
+
+        {/* Account */}
+        <div className='relative w-full lg:w-auto' ref={dropdownRef}>
+          {user?.role ? (
             <>
-              <li>
-                <Link href='/favorites' className='hover:text-gray-300 transition'>
-                  Favorites
-                </Link>
-              </li>
+              {/* Avatar Button */}
+              <button
+                onClick={() => setDropdownOpen(prev => !prev)}
+                aria-haspopup='true'
+                aria-expanded={dropdownOpen}
+                className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-white font-medium hover:bg-purple-700 transition focus:outline-none'
+              >
+                {getInitials(user.name)}
+              </button>
 
-              <li>
-                <Link href='/cart' className='hover:text-gray-300 transition'>
-                  Cart
-                </Link>
-              </li>
-            </>
-          )}
-
-          {user?.role === 'admin' && (
-            <li>
-              <Link href='/admin/products/create' className='hover:text-gray-300 transition'>
-                Add Product
-              </Link>
-            </li>
-          )}
-
-          {/* Account / Login Dropdown */}
-          <li className='relative' ref={menuRef}>
-            {user?.role ? (
-              <>
-                <button
-                  onClick={() => setMenuOpen(prev => !prev)}
-                  aria-haspopup='true'
-                  aria-expanded={menuOpen}
-                  className='w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-medium hover:bg-gray-600 transition focus:outline-none'
-                >
-                  {getInitials(user.email)}
-                </button>
-
-                {/* Dropdown */}
-                <div
-                  className={`origin-top-right absolute right-0 mt-3 w-56 bg-white text-black rounded-xl shadow-lg py-3 z-50 transform transition-all duration-200 ${
-                    menuOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
-                  }`}
-                >
-                  <div className='px-4 pb-2 border-b border-gray-200'>
-                    <p className='font-semibold text-sm truncate'>{user.email}</p>
-                    <p className='text-xs text-gray-500 capitalize truncate'>{user.role}</p>
-                  </div>
-
-                  <div className='flex flex-col py-1'>
-                    <Link
-                      href='/profile'
-                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-sm font-medium'
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        className='w-4 h-4'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          d='M5.121 17.804A9 9 0 1118.879 6.196 9 9 0 015.121 17.804z'
-                        />
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
-                      </svg>
-                      <span>Profile</span>
-                    </Link>
-
-                    <button
-                      onClick={handleLogout}
-                      className='flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition text-left text-sm font-medium'
-                    >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        className='w-4 h-4'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                        strokeWidth={2}
-                      >
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7' />
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M7 8v8' />
-                      </svg>
-                      <span>Logout</span>
-                    </button>
-                  </div>
+              <div
+                className={`absolute right-40 sm:right-0 mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200 origin-top-right ${
+                  dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
+              >
+                <div className='px-5 pb-4 border-b border-gray-200 flex flex-col gap-1'>
+                  {user.name && <p className='font-semibold text-sm text-gray-800 truncate'>{user.name}</p>}
+                  <p className='text-sm text-gray-600 truncate'>{user.email}</p>
+                  <p className='text-xs text-gray-400 capitalize truncate'>{user.role}</p>
                 </div>
-              </>
-            ) : (
-              <Link href='/auth/login' className='hover:text-gray-300 transition font-medium'>
-                Login
-              </Link>
-            )}
-          </li>
-        </ul>
+
+                <div className='flex flex-col mt-2'>
+                  {/* Profile Link */}
+                  <Link
+                    href='/profile'
+                    onClick={() => {
+                      setDropdownOpen(false)
+                      setMenuOpen(false)
+                    }}
+                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-sm font-medium rounded-lg'
+                  >
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      className='w-4 h-4 text-gray-500'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        d='M5.121 17.804A9 9 0 1118.879 6.196 9 9 0 015.121 17.804z'
+                      />
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
+                    </svg>
+                    <span>Profile</span>
+                  </Link>
+
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-left text-sm font-medium w-full rounded-lg'
+                  >
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      className='w-4 h-4 text-gray-500'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7' />
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M7 8v8' />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <Link
+              href='/auth/login'
+              onClick={() => setMenuOpen(false)}
+              className='hover:text-gray-300 transition font-medium w-full text-left'
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </nav>
     </header>
   )
