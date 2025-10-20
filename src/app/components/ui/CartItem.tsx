@@ -75,8 +75,12 @@ export const CartItem = ({ item, loadingItemId, onUpdateQuantity, onRemove, load
         <div className='flex flex-col justify-between'>
           <div className='flex flex-col justify-between items-end ml-auto h-full'>
             {onRemove && (
-              <button onClick={() => onRemove(productId)} className='text-red-600 hover:text-red-800 text-lg'>
-                <FaTrash />
+              <button
+                onClick={() => onRemove(productId)}
+                className='text-red-600 hover:text-red-800 text-lg flex items-center justify-center'
+                disabled={loadingItemId === productId}
+              >
+                {loadingItemId === productId ? <FaSpinner className='animate-spin' /> : <FaTrash />}
               </button>
             )}
 
