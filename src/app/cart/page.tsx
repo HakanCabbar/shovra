@@ -1,3 +1,4 @@
+// CartPage.tsx
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +30,11 @@ export type CartItemType = {
   loadingItemId?: string | null
   onUpdateQuantity: (productId: string, action: 'increase' | 'decrease') => void
   onRemove?: (productId: string) => void
+}
+
+type RemoveItemParams = {
+  cartItemId: string
+  productId: string
 }
 
 export default function CartPage() {
@@ -73,6 +79,24 @@ export default function CartPage() {
     onSettled: () => setLoadingItemId(null)
   })
 
+  const removeItem = useMutation({
+    mutationFn: async ({ cartItemId, productId }: RemoveItemParams) => {
+      setLoadingItemId(productId) // productId ile spinner
+      const res = await fetch('/api/cart-items', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItemId })
+      })
+      if (!res.ok) throw new Error('Failed to remove item')
+      return res.json()
+    },
+    onSuccess: () => {
+      toast.success('Item removed successfully')
+      refetch()
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to remove item'),
+    onSettled: () => setLoadingItemId(null)
+  })
   const clearCart = useMutation({
     mutationFn: async () => {
       setClearing(true)
@@ -123,7 +147,7 @@ export default function CartPage() {
                 item={item}
                 loadingItemId={loadingItemId}
                 onUpdateQuantity={(productId, action) => updateQuantity.mutate({ productId, action })}
-                onRemove={() => null}
+                onRemove={() => removeItem.mutate({ cartItemId: item.id, productId: item.product.id })}
               />
             ))}
           </div>

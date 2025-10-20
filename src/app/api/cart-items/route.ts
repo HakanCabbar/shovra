@@ -187,3 +187,57 @@ export async function GET() {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = createRouteHandlerClient({ cookies })
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const { cartItemId } = await req.json() // frontend’den cartItem id gönderilecek
+
+    if (!cartItemId) {
+      return NextResponse.json({ error: 'Missing cartItemId' }, { status: 400 })
+    }
+
+    const cart = await prisma.cart.findFirst({
+      where: { userId },
+      include: { items: { include: { product: true } } }
+    })
+
+    if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 })
+
+    await prisma.cartItem.delete({
+      where: { id: cartItemId }
+    })
+
+    const updatedItems = await prisma.cartItem.findMany({
+      where: { cartId: cart.id },
+      include: { product: true }
+    })
+
+    const totalQuantity = updatedItems.reduce((acc, i) => acc + i.quantity, 0)
+    const totalPrice = updatedItems.reduce((acc, i) => acc + i.quantity * i.product.price, 0)
+
+    await prisma.cart.update({
+      where: { id: cart.id },
+      data: { totalQuantity, totalPrice }
+    })
+
+    return NextResponse.json({
+      message: 'Cart item removed',
+      items: updatedItems,
+      totalPrice,
+      totalQuantity
+    })
+  } catch (err: any) {
+    console.error(err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

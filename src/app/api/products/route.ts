@@ -1,19 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url)
+
+    // Çoklu kategoriyi array olarak al
+    const categories = url.searchParams.getAll('category')
+    const search = url.searchParams.get('search') || undefined
+    const skip = parseInt(url.searchParams.get('skip') || '0')
+    const take = parseInt(url.searchParams.get('take') || '20') // default 20
+
     const products = await prisma.product.findMany({
+      where: {
+        ...(categories.length > 0 && { categoryId: { in: categories } }),
+        ...(search && { name: { contains: search, mode: 'insensitive' } })
+      },
       orderBy: { createdAt: 'desc' },
-      include: { category: true } // kategori bilgisi de gelsin
+      include: { category: true },
+      skip,
+      take
     })
+
     return NextResponse.json(products)
   } catch (err: any) {
     console.error(err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
