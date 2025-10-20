@@ -1,16 +1,19 @@
 // app/api/register/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { email, password } = body
+  const { email, password, name } = body
 
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+  const { data, error } = await supabaseAdmin.auth.signUp({
     email,
     password,
-    email_confirm: true
+    options: {
+      data: {
+        name: name
+      }
+    }
   })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

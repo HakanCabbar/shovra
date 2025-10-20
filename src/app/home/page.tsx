@@ -70,7 +70,8 @@ export default function ProductsPage() {
   const skeletonCount = previousProducts?.length || 8
 
   return (
-    <main className='max-w-6xl mx-auto py-12 px-4'>
+    <main className='max-w-6xl mx-auto'>
+      <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Home</h1>
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
         {isLoading
           ? Array.from({ length: skeletonCount }).map((_, i) => <ProductCard key={i} isLoading />)
