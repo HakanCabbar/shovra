@@ -59,7 +59,6 @@ export default function Header() {
       return (parts[0][0] + parts[1][0]).toUpperCase()
     }
 
-    // name yoksa emailden tahmin
     if (email) {
       const namePart = email.split('@')[0]
       const parts = namePart.split(/[\.\-_]/).filter(Boolean)
@@ -68,13 +67,11 @@ export default function Header() {
       return (parts[0][0] + parts[1][0]).toUpperCase()
     }
 
-    // hiçbir şey yoksa U
     return 'U'
   }
 
   return (
     <header className='bg-black text-white px-4 py-3 flex justify-between items-center relative'>
-      {/* Logo */}
       <Link
         href='/home'
         className='font-bold text-3xl text-white hover:text-white transition-all duration-300 hover:drop-shadow-[0_0_10px_white]'
@@ -82,7 +79,7 @@ export default function Header() {
         Shovra
       </Link>
 
-      {/* Hamburger (mobile) */}
+      {/* Hamburger Button */}
       <button
         onClick={() => setMenuOpen(prev => !prev)}
         className='lg:hidden text-white text-2xl focus:outline-none'
@@ -91,7 +88,7 @@ export default function Header() {
         {menuOpen ? <FiX /> : <FiMenu />}
       </button>
 
-      {/* Nav Links */}
+      {/* Navigation */}
       <nav
         className={`${
           menuOpen
@@ -131,23 +128,24 @@ export default function Header() {
         )}
 
         {/* Account */}
-        <div className='relative w-full lg:w-auto' ref={dropdownRef}>
+        <div className='w-full lg:w-auto' ref={dropdownRef}>
           {user?.role ? (
-            <>
-              {/* Avatar Button */}
+            <div className='relative inline-block'>
               <button
                 onClick={() => setDropdownOpen(prev => !prev)}
                 aria-haspopup='true'
                 aria-expanded={dropdownOpen}
-                className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-white font-medium hover:bg-purple-700 transition focus:outline-none'
+                className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-white font-medium hover:bg-purple-700 relative transition focus:outline-none'
               >
                 {getInitials(user.name)}
               </button>
 
+              {/* Dropdown Box */}
               <div
-                className={`absolute right-40 sm:right-0 mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200 origin-top-right ${
-                  dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
-                }`}
+                className={`absolute mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200
+                  ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
+                  left-0 lg:right-0 lg:left-auto 
+                `}
               >
                 <div className='px-5 pb-4 border-b border-gray-200 flex flex-col gap-1'>
                   {user.name && <p className='font-semibold text-sm text-gray-800 truncate'>{user.name}</p>}
@@ -156,7 +154,6 @@ export default function Header() {
                 </div>
 
                 <div className='flex flex-col mt-2'>
-                  {/* Profile Link */}
                   <Link
                     href='/profile'
                     onClick={() => {
@@ -183,7 +180,6 @@ export default function Header() {
                     <span>Profile</span>
                   </Link>
 
-                  {/* Logout Button */}
                   <button
                     onClick={handleLogout}
                     className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-left text-sm font-medium w-full rounded-lg'
@@ -203,7 +199,7 @@ export default function Header() {
                   </button>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
             <Link
               href='/auth/login'

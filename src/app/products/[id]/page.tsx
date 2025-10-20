@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast'
 import { FaRegStar, FaShoppingCart, FaStar } from 'react-icons/fa'
 import { Button } from 'app/components/ui/button'
 import { PageSpinner } from '@/app/components/ui/page-spinner'
+import ProductDetailSkeleton from '@/app/components/ui/ProductDetailSkeleton'
 
 type Category = {
   id: string
@@ -94,8 +95,14 @@ export default function ProductDetailPage({ params }: Props) {
     }
   }
 
-  if (isLoading) return <PageSpinner size={40} />
-  if (isError || !product) return <p className='text-center mt-10 text-red-600'>Product not found!</p>
+  // ✅ Skeleton state
+  if (isLoading) {
+    return <ProductDetailSkeleton />
+  }
+
+  if (isError || !product) {
+    return <p className='text-center mt-10 text-red-600'>Product not found!</p>
+  }
 
   return (
     <main className='max-w-6xl mx-auto'>
@@ -116,7 +123,7 @@ export default function ProductDetailPage({ params }: Props) {
           <p className='text-2xl text-black font-semibold mb-4'>${product.price.toFixed(2)}</p>
           <p className='text-gray-700 mb-6'>{product.description}</p>
 
-          <div className='flex gap-4 items-center justify-between sm:justify-start '>
+          <div className='flex gap-4 items-center justify-between sm:justify-start'>
             {/* Cart Button */}
             <Button
               variant={product.isInCart ? 'red' : 'black'}
