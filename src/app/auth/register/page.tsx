@@ -61,14 +61,14 @@ export default function RegisterPage() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className='bg-white shadow-lg rounded-2xl p-8 w-[400px] h-[625px] flex flex-col justify-between gap-4'
+      className='bg-white shadow-lg rounded-2xl p-4 w-[90%] sm:w-[60%] md:w-[40%] lg:w-1/4 xl:[w-20%] flex flex-col gap-4'
     >
       <div className='text-center'>
         <h1 className='text-3xl font-bold text-gray-800'>Register</h1>
         <p className='text-gray-500 mt-2'>Create your account to get started.</p>
       </div>
 
-      <div className='flex-1 flex flex-col justify-center space-y-4'>
+      <div className=' flex flex-col justify-center space-y-4'>
         <div className='space-y-2'>
           <input
             type='text'
