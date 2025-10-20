@@ -75,7 +75,7 @@ export default function CartPage() {
     },
     onError: (err: any) => {
       toast.error(err.message || 'Something went wrong')
-    },
+    }, 
     onSettled: () => setLoadingItemId(null)
   })
 
