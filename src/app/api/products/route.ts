@@ -1,27 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = createRouteHandlerClient({ cookies })
     const url = new URL(req.url)
 
-    // Çoklu kategoriyi array olarak al
     const categories = url.searchParams.getAll('category')
     const search = url.searchParams.get('search') || undefined
     const skip = parseInt(url.searchParams.get('skip') || '0')
-    const take = parseInt(url.searchParams.get('take') || '20') // default 20
+    const take = parseInt(url.searchParams.get('take') || '20')
 
-    const products = await prisma.product.findMany({
-      where: {
-        ...(categories.length > 0 && { categoryId: { in: categories } }),
-        ...(search && { name: { contains: search, mode: 'insensitive' } })
-      },
-      orderBy: { createdAt: 'desc' },
-      include: { category: true },
-      skip,
-      take
-    })
+    let query = supabase.from('Product').select('*, Category(*)')
+
+    if (categories.length > 0) {
+      query = query.in('categoryId', categories)
+    }
+
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
+    }
+
+    query = query.order('createdAt', { ascending: false }).range(skip, skip + take - 1)
+
+    const { data: products, error } = await query
+
+    if (error) throw error
 
     return NextResponse.json(products)
   } catch (err: any) {
@@ -29,7 +36,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
-
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
@@ -72,16 +78,21 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json() // body üzerinden alıyoruz
+    const supabase = createRouteHandlerClient({ cookies })
+    const { id } = await req.json()
 
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
     }
 
-    // Ürün herhangi bir sepette mi kontrol et
-    const existingCartItem = await prisma.cartItem.findFirst({
-      where: { productId: id }
-    })
+    // 1️⃣ Ürün bir sepette mi kontrol et
+    const { data: existingCartItem, error: cartCheckError } = await supabase
+      .from('CartItem')
+      .select('*')
+      .eq('productId', id)
+      .maybeSingle()
+
+    if (cartCheckError) throw cartCheckError
 
     if (existingCartItem) {
       return NextResponse.json(
@@ -93,14 +104,30 @@ export async function DELETE(req: Request) {
       )
     }
 
-    // Sepette değilse sil
-    const product = await prisma.product.delete({
-      where: { id }
-    })
+    // 2️⃣ Sepette değilse ürünü sil
+    const { data: deletedProduct, error: deleteError } = await supabase
+      .from('Product')
+      .delete()
+      .eq('id', id)
+      .select()
+      .maybeSingle() // 👈 .single() yerine .maybeSingle() kullan
 
-    return NextResponse.json({ success: true, product })
+    if (deleteError) throw deleteError
+
+    // 3️⃣ RLS nedeniyle data null dönmüşse (yani user yetkili değilse)
+    if (!deletedProduct) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'You do not have permission to delete this product.'
+        },
+        { status: 403 }
+      )
+    }
+
+    return NextResponse.json({ success: true, product: deletedProduct })
   } catch (err: any) {
-    console.error(err)
+    console.error('DELETE /api/products error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
