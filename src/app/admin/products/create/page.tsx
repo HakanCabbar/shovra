@@ -1,8 +1,16 @@
-import { prisma } from '@/lib/prisma'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import ProductForm from '../../../components/admin/CreateProductForm'
 
 export default async function CreateProductPage() {
-  const categories = await prisma.category.findMany()
+  const supabase = createRouteHandlerClient({ cookies })
+
+  const { data: categories, error } = await supabase.from('Category').select('*').order('name', { ascending: true })
+
+  if (error) {
+    console.error('Failed to fetch categories:', error)
+    return <p>Error loading categories</p>
+  }
 
   return (
     <main className='max-w-6xl mx-auto'>
