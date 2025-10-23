@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
@@ -36,7 +34,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
 export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient({ cookies })
+
   try {
     const formData = await req.formData()
     const file = formData.get('image') as File
@@ -44,20 +45,18 @@ export async function POST(req: Request) {
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}.${fileExt}`
-    const filePath = `Products/${fileName}`
+    const filePath = fileName
 
-    const { error: uploadError } = await supabaseAdmin.storage.from('Products').upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: publicData } = supabaseAdmin.storage.from('Products').getPublicUrl(filePath)
+    // ✅ Auth context taşıyan supabase ile işlem
+    const { error: uploadError } = await supabase.storage.from('Shovra').upload(filePath, file)
+    const { data: publicData } = supabase.storage.from('Shovra').getPublicUrl(filePath)
 
     const name = formData.get('name') as string
     const description = formData.get('description') as string
     const price = parseFloat(formData.get('price') as string)
     const categoryId = formData.get('categoryId') as string
 
-    const { data, error } = await supabaseAdmin.from('Product').insert([
+    const { data, error } = await supabase.from('Product').insert([
       {
         name,
         description,
@@ -68,14 +67,23 @@ export async function POST(req: Request) {
       }
     ])
 
-    if (error) return NextResponse.json({ error }, { status: 400 })
+    const anyError = uploadError || error
+
+    if (anyError) {
+      const text = anyError.message?.toLowerCase() ?? ''
+      if (text.includes('violates row-level security')) {
+        return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 })
+      }
+
+      return NextResponse.json({ error: anyError.message || 'An unexpected error occurred.' }, { status: 400 })
+    }
 
     return NextResponse.json(data)
   } catch (err: any) {
+    console.error('Catch error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
-
 export async function DELETE(req: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
@@ -85,7 +93,6 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
     }
 
-    // 1️⃣ Ürün bir sepette mi kontrol et
     const { data: existingCartItem, error: cartCheckError } = await supabase
       .from('CartItem')
       .select('*')

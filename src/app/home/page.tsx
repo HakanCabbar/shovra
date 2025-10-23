@@ -1,16 +1,25 @@
 'use client'
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import { useApp } from '../providers'
-import ProductCard from '../components/ui/ProductCard'
+// ** React And Hooks
 import { useState, useRef, useEffect } from 'react'
-import { Button } from '../components/ui/button'
-import { Trash2 } from 'lucide-react'
-import Banner from '../components/ui/Banner'
-import { InlineSpinner } from '../components/ui/inline-spinner'
-import Link from 'next/link'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** Next.js Imports
 import Image from 'next/image'
+
+// ** App Context / Custom Hooks
+import { useApp } from '../providers'
+
+// ** Third-Party Libraries
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import { Trash2 } from 'lucide-react'
+
+// ** Components
+import ProductCard from '../components/ui/ProductCard'
+import Banner from '../components/ui/Banner'
+import { InlineSpinner } from '../components/ui/InlineSpinner'
+import { Button } from '../components/ui/Button'
 
 type Product = {
   id: string
@@ -29,32 +38,68 @@ type Category = {
 const PAGE_SIZE = 10
 
 export default function ProductsPage() {
-  const { user } = useApp()
-  const queryClient = useQueryClient()
+  // ** State Hooks
   const [deletingIds, setDeletingIds] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const [selectedCategory, setSelectedCategory] = useState<string[]>([])
+
+  // ** Refs
   const loaderRef = useRef<HTMLDivElement>(null)
 
-  // 🔹 Debounce search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 400) // 400ms delay after typing stops
+  // ** App / Custom Hooks
+  const { user } = useApp()
 
+  // ** React Query Hooks
+  const queryClient = useQueryClient()
+  const { data: categories = [] } = useFetch<Category[]>({
+    queryKey: ['categories'],
+    url: '/api/categories'
+  })
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<
+    Product[],
+    Error
+  >({
+    queryKey: ['products', selectedCategory, debouncedSearch],
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams()
+      params.append('skip', String(pageParam))
+      params.append('take', String(PAGE_SIZE))
+
+      if (selectedCategory.length) {
+        selectedCategory.forEach(cat => params.append('category', cat))
+      }
+      if (debouncedSearch) params.append('search', debouncedSearch)
+
+      const res = await fetch(`/api/products?${params.toString()}`)
+      if (!res.ok) throw new Error('Failed to load products')
+      return res.json()
+    },
+    getNextPageParam: (lastPage, allPages) => (lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined),
+    initialPageParam: 0
+  })
+
+  // ** Effects
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 400)
     return () => clearTimeout(handler)
   }, [search])
 
-  const { data: categories } = useQuery<Category[]>({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const res = await fetch('/api/categories')
-      if (!res.ok) throw new Error('Failed to load categories')
-      return res.json()
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage) fetchNextPage()
+      },
+      { rootMargin: '200px' }
+    )
+    if (loaderRef.current) observer.observe(loaderRef.current)
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (loaderRef.current) observer.unobserve(loaderRef.current)
     }
-  })
+  }, [fetchNextPage, hasNextPage])
 
+  // ** Mutations / Handlers
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch('/api/products', {
@@ -82,48 +127,7 @@ export default function ProductsPage() {
     })
   }
 
-  // 🔹 Products Infinite Query
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<
-    Product[],
-    Error
-  >({
-    queryKey: ['products', selectedCategory, debouncedSearch],
-    queryFn: async ({ pageParam = 0 }) => {
-      const params = new URLSearchParams()
-      params.append('skip', String(pageParam))
-      params.append('take', String(PAGE_SIZE))
-
-      if (selectedCategory && selectedCategory.length > 0) {
-        selectedCategory.forEach(cat => params.append('category', cat))
-      }
-
-      if (debouncedSearch) params.append('search', debouncedSearch)
-
-      const res = await fetch(`/api/products?${params.toString()}`)
-      if (!res.ok) throw new Error('Failed to load products')
-      return res.json()
-    },
-    getNextPageParam: (lastPage, allPages) => (lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined),
-    initialPageParam: 0
-  })
-
-  // 🔹 Infinite Scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage()
-        }
-      },
-      { rootMargin: '200px' }
-    )
-    if (loaderRef.current) observer.observe(loaderRef.current)
-    return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      if (loaderRef.current) observer.unobserve(loaderRef.current)
-    }
-  }, [fetchNextPage, hasNextPage])
-
+  // ** Derived / Computed Values
   const bannerImages = [
     '/images/garden-supplies-banner.png',
     '/images/tech-banner.png',
@@ -137,41 +141,49 @@ export default function ProductsPage() {
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Home</h1>
 
       <Banner images={bannerImages} />
+      <div className='flex flex-col gap-4 mb-6'>
+        <div className='flex flex-wrap gap-2 mb-2 flex-col sm:flex-row'>
+          {categories?.map(c => {
+            const isSelected = selectedCategory.includes(c.id)
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  if (isSelected) setSelectedCategory(selectedCategory.filter(id => id !== c.id))
+                  else setSelectedCategory([...selectedCategory, c.id])
+                }}
+                className={`px-3 py-2 rounded text-sm border transition-colors text-left sm:text-center
+          ${isSelected ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300'}
+        `}
+              >
+                {c.name}
+              </button>
+            )
+          })}
 
-      {/* 🔹 Categories Tabs */}
-      <div className='flex gap-2 mb-6 flex-wrap'>
-        {categories?.map(c => {
-          const isSelected = selectedCategory?.includes(c.id)
-          return (
+          {(selectedCategory.length > 0 || debouncedSearch) && (
             <button
-              key={c.id}
-              className={`px-3 py-1 rounded-md whitespace-nowrap text-sm font-medium transition-colors
-              ${isSelected ? 'bg-black text-white' : 'bg-gray-200 text-black'}
-              w-full sm:w-auto`}
               onClick={() => {
-                if (!selectedCategory) setSelectedCategory([c.id])
-                else if (isSelected) setSelectedCategory(selectedCategory.filter(id => id !== c.id))
-                else setSelectedCategory([...selectedCategory, c.id])
+                setSelectedCategory([])
+                setSearch('')
+                setDebouncedSearch('')
               }}
+              className='px-3 py-2 mt-1 sm:mt-0 rounded text-sm text-red-600 border border-red-600 hover:bg-red-50 transition ml-auto sm:ml-2'
             >
-              {c.name}
+              Clear
             </button>
-          )
-        })}
-      </div>
+          )}
+        </div>
 
-      {/* 🔹 Search */}
-      <div className='mb-6'>
         <input
           type='text'
           placeholder='Search products...'
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className='w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+          className='w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 transition mt-4'
         />
       </div>
 
-      {/* 🔹 Products Grid */}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
         {isLoading ? (
           Array.from({ length: PAGE_SIZE }).map((_, i) => <ProductCard key={i} isLoading />)
@@ -205,7 +217,6 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* 🔹 Loader */}
       <div ref={loaderRef} className='text-center mt-4'>
         {isFetchingNextPage && <InlineSpinner />}
       </div>

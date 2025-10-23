@@ -1,6 +1,9 @@
 'use client'
 
+// ** React & Hooks
 import { useState, useEffect } from 'react'
+
+// ** Next.js
 import Image from 'next/image'
 
 interface BannerProps {
@@ -11,16 +14,18 @@ interface BannerProps {
 export default function Banner({ images, intervalMs = 4000 }: BannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  // 🔹 Auto-slide
+  // ** Slide değişimi için interval
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % images.length)
     }, intervalMs)
+
     return () => clearInterval(interval)
   }, [images.length, intervalMs])
 
   return (
     <div className='relative w-full h-[300px] sm:h-[400px] mb-10 overflow-hidden rounded-2xl shadow-md'>
+      {/* Banner Görselleri */}
       {images.map((src, i) => (
         <div
           key={i}
@@ -33,7 +38,7 @@ export default function Banner({ images, intervalMs = 4000 }: BannerProps) {
         </div>
       ))}
 
-      {/* Dots */}
+      {/* Dot Navigator */}
       <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2'>
         {images.map((_, i) => (
           <button

@@ -1,18 +1,22 @@
 'use client'
 
+// ** React and hooks
 import { useState } from 'react'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** React Hook Form
 import { useForm } from 'react-hook-form'
+
+// ** Validation
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
+
+// ** Third-party UI / Toast
 import { toast } from 'react-hot-toast'
 
 interface Category {
   id: string
   name: string
-}
-
-interface Props {
-  categories: Category[]
 }
 
 const schema = yup.object({
@@ -34,9 +38,21 @@ const schema = yup.object({
 
 type FormValues = yup.InferType<typeof schema>
 
-export default function ProductForm({ categories }: Props) {
+export default function ProductForm() {
+  // ** Local state
   const [loading, setLoading] = useState(false)
 
+  // ** Fetch categories
+  const {
+    data: categories = [],
+    isLoading,
+    isError: error
+  } = useFetch<Category[]>({
+    queryKey: ['categories'],
+    url: '/api/categories'
+  })
+
+  // ** React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -46,6 +62,7 @@ export default function ProductForm({ categories }: Props) {
     resolver: yupResolver(schema)
   })
 
+  // ** Handlers
   const onSubmit = async (data: FormValues) => {
     try {
       setLoading(true)
@@ -71,12 +88,17 @@ export default function ProductForm({ categories }: Props) {
       toast.success('Product created successfully!')
       reset()
     } catch (err: any) {
-      console.error(err)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
   }
 
+  // ** Loading & error states
+  if (isLoading) return <p>Loading categories...</p>
+  if (error) return <p className='text-red-500'>Failed to load categories</p>
+
+  // ** JSX
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
       <div>

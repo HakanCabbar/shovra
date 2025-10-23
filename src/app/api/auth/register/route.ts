@@ -1,12 +1,12 @@
 // app/api/register/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { supabase } from '@/lib/supabaseClient'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { email, password, name } = body
 
-  const { data, error } = await supabaseAdmin.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {

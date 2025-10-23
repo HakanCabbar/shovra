@@ -1,25 +1,31 @@
 'use client'
 
+// ** React And Hooks
 import { useEffect } from 'react'
+
+// ** React Hook Form
 import { useForm, SubmitHandler } from 'react-hook-form'
+
+// ** Validation
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useApp } from '@/app/providers'
+
+// ** Third-Party Utilities
 import { toast } from 'react-hot-toast'
 
-// Schema
+// ** App Context / Custom Hooks
+import { useApp } from '@/app/providers'
+
 const schema = yup.object({
   name: yup.string().min(3, 'At least 3 characters').required('Required'),
   email: yup.string().email('Invalid email').required('Required'),
   password: yup
     .string()
-    .transform(value => (value === '' ? undefined : value)) // boş stringleri undefined yap
+    .transform(value => (value === '' ? undefined : value))
     .min(6, 'At least 6 characters')
     .notRequired()
 })
 
-// Form tipi
 type FormValues = {
   name: string
   email: string
@@ -27,8 +33,10 @@ type FormValues = {
 }
 
 export default function ProfilePage() {
+  // ** App / Custom Hooks
   const { user, setUser } = useApp()
 
+  // ** Form Hooks
   const {
     register,
     handleSubmit,
@@ -43,6 +51,7 @@ export default function ProfilePage() {
     }
   })
 
+  // ** Populate Form on User Load
   useEffect(() => {
     if (user) {
       reset({
@@ -53,6 +62,7 @@ export default function ProfilePage() {
     }
   }, [user, reset])
 
+  // ** Handlers
   const onSubmit: SubmitHandler<FormValues> = async data => {
     try {
       const updates: Partial<{ name: string; email: string }> = {}

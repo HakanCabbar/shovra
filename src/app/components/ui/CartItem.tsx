@@ -1,8 +1,15 @@
 'use client'
 
+// ** Next.js Imports
 import Image from 'next/image'
+
+// ** Third-Party Libraries
 import { FaPlus, FaMinus, FaTrash, FaSpinner } from 'react-icons/fa'
+
+// ** Components
 import { CartItemSkeleton } from './CartItemSkeleton'
+
+// ** Types / App Imports
 import { CartItemType } from '@/app/cart/page'
 
 interface CartItemProps {
@@ -15,8 +22,10 @@ interface CartItemProps {
 
 export const CartItem = ({ item, loadingItemId, onUpdateQuantity, onRemove, loading = false }: CartItemProps) => {
   if (loading) return <CartItemSkeleton />
+  if (!item) return null
 
-  const { productId, quantity, product } = item!
+  const { productId, quantity, product } = item
+  const isLoading = loadingItemId === productId
 
   return (
     <div className='flex sm:gap-4 gap-4 border rounded-xl p-2 shadow-sm hover:shadow-md transition'>
@@ -45,47 +54,36 @@ export const CartItem = ({ item, loadingItemId, onUpdateQuantity, onRemove, load
 
           <div className='flex items-center gap-2 mt-2'>
             <button
-              disabled={loadingItemId === productId}
+              disabled={isLoading}
               onClick={() => onUpdateQuantity?.(productId, 'decrease')}
               className='bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 w-6 h-6 flex items-center justify-center rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed text-xs'
             >
-              {loadingItemId === productId ? (
-                <FaSpinner className='animate-spin text-xs' />
-              ) : (
-                <FaMinus className='text-xs' />
-              )}
+              {isLoading ? <FaSpinner className='animate-spin text-xs' /> : <FaMinus className='text-xs' />}
             </button>
 
             <span className='px-2 text-gray-800 font-medium text-sm'>{quantity}</span>
 
             <button
-              disabled={loadingItemId === productId}
+              disabled={isLoading}
               onClick={() => onUpdateQuantity?.(productId, 'increase')}
               className='bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 w-6 h-6 flex items-center justify-center rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed text-xs'
             >
-              {loadingItemId === productId ? (
-                <FaSpinner className='animate-spin text-xs' />
-              ) : (
-                <FaPlus className='text-xs' />
-              )}
+              {isLoading ? <FaSpinner className='animate-spin text-xs' /> : <FaPlus className='text-xs' />}
             </button>
           </div>
         </div>
 
-        <div className='flex flex-col justify-between'>
-          <div className='flex flex-col justify-between items-end ml-auto h-full'>
-            {onRemove && (
-              <button
-                onClick={() => onRemove(productId)}
-                className='text-red-600 hover:text-red-800 text-lg flex items-center justify-center'
-                disabled={loadingItemId === productId}
-              >
-                {loadingItemId === productId ? <FaSpinner className='animate-spin' /> : <FaTrash />}
-              </button>
-            )}
-
-            <div className='font-semibold text-gray-800 text-lg mt-auto'>${(product.price * quantity).toFixed(2)}</div>
-          </div>
+-        <div className='flex flex-col justify-between items-end ml-auto h-full'>
+          {onRemove && (
+            <button
+              onClick={() => onRemove(productId)}
+              className='text-red-600 hover:text-red-800 text-lg flex items-center justify-center'
+              disabled={isLoading}
+            >
+              {isLoading ? <FaSpinner className='animate-spin' /> : <FaTrash />}
+            </button>
+          )}
+          <div className='font-semibold text-gray-800 text-lg mt-auto'>${(product.price * quantity).toFixed(2)}</div>
         </div>
       </div>
     </div>
