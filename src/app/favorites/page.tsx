@@ -18,7 +18,7 @@ import Image from 'next/image'
 
 // ** Components
 import ProductCard from '../components/ui/ProductCard'
-import { Button } from '@/app/components/ui/Button'
+import { Button } from '../components/ui/Button'
 import { useFetch } from '@/lib/hooks/useFetch'
 
 // ** Types
