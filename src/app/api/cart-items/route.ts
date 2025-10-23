@@ -1,7 +1,48 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+export async function GET() {
+  try {
+    const supabase = createRouteHandlerClient({ cookies })
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const userId = session.user.id
+
+    const { data: cartData, error: cartError } = await supabase
+      .from('Cart')
+      .select('id, totalPrice, totalQuantity')
+      .eq('userId', userId)
+      .maybeSingle()
+
+    if (cartError) throw cartError
+    if (!cartData) return NextResponse.json({ items: [], totalPrice: 0, totalQuantity: 0 })
+
+    const cartId = cartData.id
+
+    const { data: items, error: itemsError } = await supabase
+      .from('CartItem')
+      .select('id, productId, quantity, product:productId(id,name,description,price,imageUrl)')
+      .eq('cartId', cartId)
+
+    if (itemsError) throw itemsError
+
+    return NextResponse.json({
+      id: cartId,
+      items,
+      totalPrice: cartData.totalPrice,
+      totalQuantity: cartData.totalQuantity
+    })
+  } catch (err: any) {
+    console.error('GET /cart-items error:', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -18,71 +59,33 @@ export async function POST(req: Request) {
     const { productId } = await req.json()
     if (!productId) return NextResponse.json({ error: 'Missing productId' }, { status: 400 })
 
-    // Aktif sepeti bul veya oluştur
-    let cart = await prisma.cart.findFirst({
-      where: { userId },
-      include: { items: { include: { product: true } } }
-    })
+    // 1️⃣ Aktif sepeti al veya oluştur
+    const { data: cartData, error: cartError } = await supabase.from('Cart').select('id').eq('userId', userId).single()
 
-    if (!cart) {
-      cart = await prisma.cart.create({
-        data: { userId },
-        include: { items: { include: { product: true } } }
-      })
+    if (cartError && cartError.code !== 'PGRST116') throw cartError
+
+    let cartId = cartData?.id
+    if (!cartId) {
+      const { data: newCart, error: createError } = await supabase.from('Cart').insert({ userId }).select('id').single()
+      if (createError) throw createError
+      cartId = newCart.id
     }
 
-    // Sepette var mı kontrol et
-    const existingItem = cart.items.find(item => item.productId === productId)
+    // 2️⃣ Sepete ekle
+    const { data: newItem, error: itemError } = await supabase
+      .from('CartItem')
+      .insert({ cartId, productId, quantity: 1 })
+      .select('id, productId, quantity')
+      .single()
 
-    if (existingItem) {
-      await prisma.cartItem.delete({ where: { id: existingItem.id } })
+    if (itemError) throw itemError
 
-      // Kalan ürünleri kontrol et
-      const remainingItems = await prisma.cartItem.findMany({
-        where: { cartId: cart.id },
-        include: { product: true }
-      })
-
-      if (remainingItems.length === 0) {
-        await prisma.cart.delete({ where: { id: cart.id } })
-        return NextResponse.json({
-          message: 'Removed from cart and cart deleted',
-          items: [],
-          totalPrice: 0,
-          totalQuantity: 0
-        })
-      }
-
-      // Cart toplamlarını güncelle
-      const totalQuantity = remainingItems.reduce((acc, i) => acc + i.quantity, 0)
-      const totalPrice = remainingItems.reduce((acc, i) => acc + i.quantity * i.product.price, 0)
-
-      await prisma.cart.update({
-        where: { id: cart.id },
-        data: { totalQuantity, totalPrice }
-      })
-
-      return NextResponse.json({ message: 'Removed from cart', items: remainingItems, totalPrice, totalQuantity })
-    }
-
-    // Sepete ekle
-    const newItem = await prisma.cartItem.create({
-      data: { cartId: cart.id, productId, quantity: 1 },
-      include: { product: true }
+    return NextResponse.json({
+      message: 'Added to cart',
+      item: newItem
     })
-
-    const updatedItems = [...cart.items, newItem]
-    const totalQuantity = updatedItems.reduce((acc, i) => acc + i.quantity, 0)
-    const totalPrice = updatedItems.reduce((acc, i) => acc + i.quantity * i.product.price, 0)
-
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { totalQuantity, totalPrice }
-    })
-
-    return NextResponse.json({ message: 'Added to cart', items: updatedItems, totalPrice, totalQuantity })
   } catch (err: any) {
-    console.error(err)
+    console.error('POST /cart-items error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
@@ -105,85 +108,70 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
-    const cart = await prisma.cart.findFirst({
-      where: { userId },
-      include: { items: { include: { product: true } } }
-    })
+    const { data: cartData, error: cartError } = await supabase
+      .from('Cart')
+      .select('id, totalQuantity, totalPrice')
+      .eq('userId', userId)
+      .maybeSingle()
 
-    if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 })
+    if (cartError) throw cartError
+    if (!cartData) return NextResponse.json({ error: 'Cart not found' }, { status: 404 })
 
-    const item = cart.items.find(i => i.productId === productId)
-    if (!item) return NextResponse.json({ error: 'Product not in cart' }, { status: 404 })
+    const cartId = cartData.id
 
+    const { data: items, error: itemsError } = await supabase
+      .from('CartItem')
+      .select('id, productId, quantity, product:productId(price)')
+      .eq('cartId', cartId)
+      .eq('productId', productId)
+
+    if (itemsError) throw itemsError
+    if (!items || items.length === 0) return NextResponse.json({ error: 'Product not in cart' }, { status: 404 })
+
+    const item = items[0]
     let updatedQuantity = item.quantity
     if (action === 'increase') updatedQuantity += 1
     if (action === 'decrease') updatedQuantity -= 1
 
     if (updatedQuantity <= 0) {
-      // Item sil
-      await prisma.cartItem.delete({ where: { id: item.id } })
+      const { error: deleteError } = await supabase.from('CartItem').delete().eq('id', item.id)
+      if (deleteError) throw deleteError
     } else {
-      // Quantity güncelle
-      await prisma.cartItem.update({
-        where: { id: item.id },
-        data: { quantity: updatedQuantity }
+      const { error: updateError } = await supabase
+        .from('CartItem')
+        .update({ quantity: updatedQuantity })
+        .eq('id', item.id)
+      if (updateError) throw updateError
+    }
+
+    const { data: updatedItems, error: updatedItemsError } = await supabase
+      .from('CartItem')
+      .select('id, productId, quantity, product:productId(price)')
+      .eq('cartId', cartId)
+
+    if (updatedItemsError) throw updatedItemsError
+
+    const totalQuantity = updatedItems.reduce((acc, i) => acc + i.quantity, 0)
+    const totalPrice = updatedItems.reduce((acc, i) => acc + i.quantity * (i.product[0]?.price ?? 0), 0)
+
+    const { error: cartUpdateError } = await supabase
+      .from('Cart')
+      .update({ totalQuantity, totalPrice })
+      .eq('id', cartId)
+    if (cartUpdateError) throw cartUpdateError
+
+    if (totalQuantity === 0) {
+      const { error: cartDeleteError } = await supabase.from('Cart').delete().eq('id', cartId)
+      if (cartDeleteError) throw cartDeleteError
+      return NextResponse.json({
+        message: 'Cart is empty and deleted',
+        cart: { totalQuantity: 0, totalPrice: 0, items: [] }
       })
     }
 
-    // Cart toplamlarını yeniden hesapla
-    const updatedItems = await prisma.cartItem.findMany({
-      where: { cartId: cart.id },
-      include: { product: true }
-    })
-
-    if (updatedItems.length === 0) {
-      await prisma.cart.delete({ where: { id: cart.id } })
-      return NextResponse.json({ message: 'Cart is empty and deleted' })
-    }
-
-    const totalQuantity = updatedItems.reduce((acc, i) => acc + i.quantity, 0)
-    const totalPrice = updatedItems.reduce((acc, i) => acc + i.quantity * i.product.price, 0)
-
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { totalQuantity, totalPrice }
-    })
-
     return NextResponse.json({ message: 'Cart updated', cart: { totalQuantity, totalPrice, items: updatedItems } })
   } catch (err: any) {
-    console.error(err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
-}
-
-export async function GET() {
-  try {
-    const supabase = createRouteHandlerClient({ cookies })
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-
-    const userId = session.user.id
-
-    const cart = await prisma.cart.findFirst({
-      where: { userId },
-      include: { items: { include: { product: true } } }
-    })
-
-    if (!cart) return NextResponse.json({ items: [], totalPrice: 0, totalQuantity: 0 })
-
-    return NextResponse.json({
-      id: cart.id,
-      items: cart.items,
-      totalPrice: cart.totalPrice,
-      totalQuantity: cart.totalQuantity
-    })
-  } catch (err: any) {
-    console.error(err)
+    console.error('PATCH /cart-items error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
@@ -200,44 +188,49 @@ export async function DELETE(req: Request) {
     }
 
     const userId = session.user.id
-    const { cartItemId } = await req.json() // frontend’den cartItem id gönderilecek
+    const { cartItemId } = await req.json()
 
     if (!cartItemId) {
       return NextResponse.json({ error: 'Missing cartItemId' }, { status: 400 })
     }
 
-    const cart = await prisma.cart.findFirst({
-      where: { userId },
-      include: { items: { include: { product: true } } }
-    })
+    // 1️⃣ Kullanıcının aktif sepetini al
+    const { data: cartData, error: cartError } = await supabase
+      .from('Cart')
+      .select('id, totalPrice, totalQuantity')
+      .eq('userId', userId)
+      .maybeSingle()
 
-    if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 })
+    if (cartError) throw cartError
+    if (!cartData) return NextResponse.json({ error: 'Cart not found', status: 404 })
 
-    await prisma.cartItem.delete({
-      where: { id: cartItemId }
-    })
+    const cartId = cartData.id
 
-    const updatedItems = await prisma.cartItem.findMany({
-      where: { cartId: cart.id },
-      include: { product: true }
-    })
+    const { error: deleteError } = await supabase.from('CartItem').delete().eq('id', cartItemId)
+    if (deleteError) throw deleteError
 
-    const totalQuantity = updatedItems.reduce((acc, i) => acc + i.quantity, 0)
-    const totalPrice = updatedItems.reduce((acc, i) => acc + i.quantity * i.product.price, 0)
+    const { data: remainingItems, error: itemsError } = await supabase
+      .from('CartItem')
+      .select('id, productId, quantity, product:productId(id,name,description,price,imageUrl)')
+      .eq('cartId', cartId)
 
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { totalQuantity, totalPrice }
-    })
+    if (itemsError) throw itemsError
+
+    const totalQuantity = remainingItems.reduce((acc, i) => acc + i.quantity, 0)
+    const totalPrice = remainingItems.reduce((acc, i) => acc + i.quantity * (i.product[0]?.price ?? 0), 0)
+
+    const { error: updateError } = await supabase.from('Cart').update({ totalQuantity, totalPrice }).eq('id', cartId)
+
+    if (updateError) throw updateError
 
     return NextResponse.json({
       message: 'Cart item removed',
-      items: updatedItems,
+      items: remainingItems,
       totalPrice,
       totalQuantity
     })
   } catch (err: any) {
-    console.error(err)
+    console.error('DELETE /cart-items error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

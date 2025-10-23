@@ -23,6 +23,7 @@ type Product = {
   category?: Category
   isProductFavorited: boolean
   isInCart: boolean
+  cartItemId: string
 }
 
 interface Props {
@@ -53,11 +54,18 @@ export default function ProductDetailPage({ params }: Props) {
     if (!product) return
     try {
       setAddingToCart(true)
+
+      const method = product.isInCart ? 'DELETE' : 'POST'
+      const body = product.isInCart
+        ? JSON.stringify({ cartItemId: product.cartItemId })
+        : JSON.stringify({ productId: product.id })
+
       const res = await fetch('/api/cart-items', {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id })
+        body
       })
+
       const data = await res.json()
       if (res.ok) {
         toast.success(data.message || (product.isInCart ? 'Removed from cart!' : 'Added to cart!'))
@@ -76,19 +84,24 @@ export default function ProductDetailPage({ params }: Props) {
     if (!product) return
     try {
       setFavoriteLoading(true)
+
+      const method = product.isProductFavorited ? 'DELETE' : 'POST'
+
       const res = await fetch('/api/favorites', {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id })
       })
+
       const data = await res.json()
+
       if (res.ok) {
         toast.success(data.message || (product.isProductFavorited ? 'Removed from favorites!' : 'Added to favorites!'))
         refetch()
       } else {
         toast.error(data.error || 'Failed to update favorites!')
       }
-    } catch {
+    } catch (err) {
       toast.error('Failed to update favorites!')
     } finally {
       setFavoriteLoading(false)
