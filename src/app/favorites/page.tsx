@@ -19,7 +19,7 @@ import Image from 'next/image'
 // ** Components
 import ProductCard from '../components/ui/ProductCard'
 import { useFetch } from '@/lib/hooks/useFetch'
-import { Button } from '../components/ui/Button'
+import { Button } from '../components/ui/SharedButton'
 
 // ** Types
 export type Product = {
