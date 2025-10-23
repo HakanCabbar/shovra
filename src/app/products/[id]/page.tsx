@@ -16,7 +16,7 @@ import ProductDetailSkeleton from '@/app/components/ui/ProductDetailSkeleton'
 
 // ** App Context / Custom Hooks
 import { useApp } from '@/app/providers'
-import { Button } from '@/app/components/ui/Button'
+import { Button } from '@/app/components/ui/SharedButton'
 
 type Category = {
   id: string

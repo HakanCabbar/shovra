@@ -15,7 +15,7 @@ import { FaTrash } from 'react-icons/fa'
 
 // ** Components
 import { CartItem } from '../components/ui/CartItem'
-import { Button } from '../components/ui/Button'
+import { Button } from '../components/ui/SharedButton'
 
 // ** Types
 type CartData = {

@@ -19,7 +19,7 @@ import { Trash2 } from 'lucide-react'
 import ProductCard from '../components/ui/ProductCard'
 import Banner from '../components/ui/Banner'
 import { InlineSpinner } from '../components/ui/InlineSpinner'
-import { Button } from '../components/ui/Button'
+import { Button } from '../components/ui/SharedButton'
 
 type Product = {
   id: string

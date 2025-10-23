@@ -16,7 +16,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses = {
   black: 'bg-black text-white hover:bg-gray-800',
-  red: 'bg-red-600 text-white hover:bg-red-700', 
+  red: 'bg-red-600 text-white hover:bg-red-700',
   yellow: 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100'
 }
 
