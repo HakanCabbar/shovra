@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { FiMenu, FiX } from 'react-icons/fi'
+import Image from 'next/image'
 
 export default function Header() {
   const { user, setUser } = useApp()
@@ -74,9 +75,29 @@ export default function Header() {
     <header className='bg-black text-white px-4 py-3 flex justify-between items-center relative'>
       <Link
         href='/home'
-        className='font-bold text-3xl text-white hover:text-white transition-all duration-300 hover:drop-shadow-[0_0_10px_white]'
+        // DEĞİŞTİ: Logoyu ve metni hizalamak için flexbox eklendi
+        className='inline-flex items-center gap-3 transition-all duration-300 group' // 'group' anasıfını ekledik
       >
-        Shovra
+        <Image
+          src='/images/shovra-logo.png'
+          alt='Shovra Logo'
+          width={75}
+          height={75}
+          // DEĞİŞTİ: Hover efekti artık 'group-hover' ile tetiklenecek
+          className='bg-transparent group-hover:drop-shadow-[0_0_20px_white] transition-all duration-300'
+        />
+
+        {/* EKLENDİ: Logo sağındaki metin */}
+        <span
+          className='
+      text-white text-3xl font-bold tracking-tight 
+      group-hover:text-gray-200 transition-colors duration-300
+    '
+          // 'text-3xl font-bold tracking-tight' "güzel font" görünümü için öneridir.
+          // Dilerseniz (text-2xl, font-semibold, vb.) değiştirebilirsiniz.
+        >
+          Shovra
+        </span>
       </Link>
 
       {/* Hamburger Button */}

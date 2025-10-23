@@ -12,7 +12,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const userId = session?.user?.id
 
   try {
-    // Product ve category
     const { data: product, error: prodError } = await supabase
       .from('Product')
       .select('*, category:categoryId(name)')
@@ -21,7 +20,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     if (prodError) throw prodError
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
-    // Favori durumu
     let isProductFavorited = false
     if (userId) {
       const { data: favs, error: favError } = await supabase
@@ -33,7 +31,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       isProductFavorited = (favs?.length ?? 0) > 0
     }
 
-    // Kullanıcının aktif sepeti
     let cartItemId: string | null = null
     let isInCart = false
     if (userId) {

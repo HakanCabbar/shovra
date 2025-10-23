@@ -107,7 +107,6 @@ export default function ProductsPage() {
     initialPageParam: 0
   })
 
-  // 🔹 Infinite Scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
@@ -137,41 +136,52 @@ export default function ProductsPage() {
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Home</h1>
 
       <Banner images={bannerImages} />
+      {/* 🔹 Minimal Filter Panel */}
+      <div className='flex flex-col gap-4 mb-6'>
+        <div className='flex flex-wrap gap-2 mb-2 flex-col sm:flex-row'>
+          {categories?.map(c => {
+            const isSelected = selectedCategory.includes(c.id)
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  if (isSelected) setSelectedCategory(selectedCategory.filter(id => id !== c.id))
+                  else setSelectedCategory([...selectedCategory, c.id])
+                }}
+                className={`px-3 py-2 rounded text-sm border transition-colors text-left sm:text-center
+          ${isSelected ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300'}
+        `}
+              >
+                {c.name}
+              </button>
+            )
+          })}
 
-      {/* 🔹 Categories Tabs */}
-      <div className='flex gap-2 mb-6 flex-wrap'>
-        {categories?.map(c => {
-          const isSelected = selectedCategory?.includes(c.id)
-          return (
+          {/* Clear Filters */}
+          {(selectedCategory.length > 0 || debouncedSearch) && (
             <button
-              key={c.id}
-              className={`px-3 py-1 rounded-md whitespace-nowrap text-sm font-medium transition-colors
-              ${isSelected ? 'bg-black text-white' : 'bg-gray-200 text-black'}
-              w-full sm:w-auto`}
               onClick={() => {
-                if (!selectedCategory) setSelectedCategory([c.id])
-                else if (isSelected) setSelectedCategory(selectedCategory.filter(id => id !== c.id))
-                else setSelectedCategory([...selectedCategory, c.id])
+                setSelectedCategory([])
+                setSearch('')
+                setDebouncedSearch('')
               }}
+              className='px-3 py-2 mt-1 sm:mt-0 rounded text-sm text-red-600 border border-red-600 hover:bg-red-50 transition ml-auto sm:ml-2'
             >
-              {c.name}
+              Clear
             </button>
-          )
-        })}
-      </div>
+          )}
+        </div>
 
-      {/* 🔹 Search */}
-      <div className='mb-6'>
+        {/* 🔹 Search Bar */}
         <input
           type='text'
           placeholder='Search products...'
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className='w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+          className='w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 transition mt-4'
         />
       </div>
 
-      {/* 🔹 Products Grid */}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
         {isLoading ? (
           Array.from({ length: PAGE_SIZE }).map((_, i) => <ProductCard key={i} isLoading />)

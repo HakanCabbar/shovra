@@ -8,6 +8,7 @@ import { FaRegStar, FaShoppingCart, FaStar } from 'react-icons/fa'
 import { Button } from 'app/components/ui/button'
 import { PageSpinner } from '@/app/components/ui/page-spinner'
 import ProductDetailSkeleton from '@/app/components/ui/ProductDetailSkeleton'
+import { useApp } from '@/app/providers'
 
 type Category = {
   id: string
@@ -33,6 +34,7 @@ interface Props {
 export default function ProductDetailPage({ params }: Props) {
   const [addingToCart, setAddingToCart] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const { user } = useApp()
 
   const { id } = params
 
@@ -136,27 +138,28 @@ export default function ProductDetailPage({ params }: Props) {
           <p className='text-2xl text-black font-semibold mb-4'>${product.price.toFixed(2)}</p>
           <p className='text-gray-700 mb-6'>{product.description}</p>
 
-          <div className='flex gap-4 items-center justify-between sm:justify-start'>
-            {/* Cart Button */}
-            <Button
-              variant={product.isInCart ? 'red' : 'black'}
-              loading={addingToCart}
-              icon={<FaShoppingCart className='w-4 h-4' />}
-              onClick={handleToggleCart}
-            >
-              {product.isInCart ? 'In Cart' : 'Add to Cart'}
-            </Button>
+          {user?.role && (
+            <div className='flex gap-4 items-center justify-between sm:justify-start'>
+              {/* Cart Button */}
+              <Button
+                variant={product.isInCart ? 'red' : 'black'}
+                loading={addingToCart}
+                icon={<FaShoppingCart className='w-4 h-4' />}
+                onClick={handleToggleCart}
+              >
+                {product.isInCart ? 'In Cart' : 'Add to Cart'}
+              </Button>
 
-            {/* Favorite Button */}
-            <Button
-              variant='yellow'
-              loading={favoriteLoading}
-              icon={product.isProductFavorited ? <FaStar className='w-4 h-4' /> : <FaRegStar className='w-4 h-4' />}
-              onClick={handleToggleFavorite}
-            >
-              {product.isProductFavorited ? 'Favorited' : 'Add to Favorites'}
-            </Button>
-          </div>
+              <Button
+                variant='yellow'
+                loading={favoriteLoading}
+                icon={product.isProductFavorited ? <FaStar className='w-4 h-4' /> : <FaRegStar className='w-4 h-4' />}
+                onClick={handleToggleFavorite}
+              >
+                {product.isProductFavorited ? 'Favorited' : 'Add to Favorites'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </main>

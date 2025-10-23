@@ -15,42 +15,58 @@ export async function GET() {
 
     const userId = session.user.id
 
-    const { data: cartItemsData, error: cartError } = await supabase
-      .from('CartItem')
-      .select('productId')
-      .eq('cartId', userId)
-
-    if (cartError) throw cartError
-
-    const cartProductIds = cartItemsData?.map((item: any) => item.productId) || []
-
     const { data: favoritesData, error: favError } = await supabase
       .from('UserFavorites')
       .select(
         `
-    Product(
-      id,
-      name,
-      description,
-      price,
-      imageUrl,
-      categoryId
-    )
-  `
+        Product(
+          id,
+          name,
+          description,
+          price,
+          imageUrl,
+          categoryId
+        )
+      `
       )
       .eq('userId', userId)
 
     if (favError) throw favError
 
-    const products = favoritesData.map((fav: any) => {
-      const product = fav.Product
-      const isInCart = cartProductIds.includes(product.id)
-      return {
-        ...product,
-        isInCart,
-        isProductFavorited: true
-      }
-    })
+    const { data: carts, error: cartError } = await supabase.from('Cart').select('id').eq('userId', userId).limit(1)
+    if (cartError) throw cartError
+
+    const cartId = carts?.[0]?.id
+
+    const products = await Promise.all(
+      favoritesData.map(async (fav: any) => {
+        const product = fav.Product
+        let isInCart = false
+        let cartItemId: string | undefined = undefined
+
+        if (cartId) {
+          const { data: cartItems, error: cartItemsError } = await supabase
+            .from('CartItem')
+            .select('id')
+            .eq('cartId', cartId)
+            .eq('productId', product.id)
+
+          if (cartItemsError) throw cartItemsError
+
+          if (cartItems && cartItems.length > 0) {
+            cartItemId = cartItems[0].id
+            isInCart = true
+          }
+        }
+
+        return {
+          ...product,
+          isInCart,
+          cartItemId,
+          isProductFavorited: true
+        }
+      })
+    )
 
     return NextResponse.json(products)
   } catch (err: any) {
@@ -58,7 +74,6 @@ export async function GET() {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
-
 export async function POST(req: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
