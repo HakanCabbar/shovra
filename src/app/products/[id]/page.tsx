@@ -1,13 +1,21 @@
 'use client'
 
-import Image from 'next/image'
+// ** React And Hooks
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** Next.js Imports
+import Image from 'next/image'
+
+// ** Third-Party Libraries
 import { toast } from 'react-hot-toast'
 import { FaRegStar, FaShoppingCart, FaStar } from 'react-icons/fa'
-import { Button } from 'app/components/ui/button'
-import { PageSpinner } from '@/app/components/ui/page-spinner'
+
+// ** Components
+import { Button } from '@/app/components/ui/Button'
 import ProductDetailSkeleton from '@/app/components/ui/ProductDetailSkeleton'
+
+// ** App Context / Custom Hooks
 import { useApp } from '@/app/providers'
 
 type Category = {
@@ -41,15 +49,11 @@ export default function ProductDetailPage({ params }: Props) {
   const {
     data: product,
     isLoading,
-    refetch,
-    isError
-  } = useQuery<Product>({
+    isError,
+    refetch
+  } = useFetch<Product>({
     queryKey: ['product', id],
-    queryFn: async () => {
-      const res = await fetch(`/api/products/${id}`)
-      if (!res.ok) throw new Error('Failed to load product')
-      return res.json()
-    }
+    url: `/api/products/${id}`
   })
 
   const handleToggleCart = async () => {
@@ -110,7 +114,6 @@ export default function ProductDetailPage({ params }: Props) {
     }
   }
 
-  // ✅ Skeleton state
   if (isLoading) {
     return <ProductDetailSkeleton />
   }
@@ -123,7 +126,6 @@ export default function ProductDetailPage({ params }: Props) {
     <main className='max-w-6xl mx-auto'>
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Product Detail</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-        {/* Left: Image */}
         <div className='relative w-full h-96 rounded-lg overflow-hidden shadow-md'>
           {product.imageUrl ? (
             <Image src={product.imageUrl} alt={product.name} fill className='object-cover' />
@@ -132,7 +134,6 @@ export default function ProductDetailPage({ params }: Props) {
           )}
         </div>
 
-        {/* Right: Info */}
         <div className='flex flex-col'>
           <h1 className='text-3xl font-bold mb-2'>{product.name}</h1>
           <p className='text-2xl text-black font-semibold mb-4'>${product.price.toFixed(2)}</p>
@@ -140,7 +141,6 @@ export default function ProductDetailPage({ params }: Props) {
 
           {user?.role && (
             <div className='flex gap-4 items-center justify-between sm:justify-start'>
-              {/* Cart Button */}
               <Button
                 variant={product.isInCart ? 'red' : 'black'}
                 loading={addingToCart}

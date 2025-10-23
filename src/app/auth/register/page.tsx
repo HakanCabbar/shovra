@@ -1,13 +1,20 @@
 'use client'
 
+// ** Next.js Imports
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
-// Yup validation schema (Değişiklik yok)
+
+// ** React Hook Form
+import { useForm } from 'react-hook-form'
+
+// ** Validation
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+
+// ** Third-Party Utilities
+import { toast } from 'react-hot-toast'
+
 const registerSchema = yup
   .object({
     name: yup.string().min(2, 'Name must be at least 2 characters').required('Name is required'),
@@ -33,7 +40,6 @@ export default function RegisterPage() {
     resolver: yupResolver(registerSchema)
   })
 
-  // onSubmit fonksiyonu (Değişiklik yok)
   const onSubmit = async (data: RegisterFormInputs) => {
     try {
       const res = await fetch('/api/register', {
@@ -60,11 +66,9 @@ export default function RegisterPage() {
   }
 
   return (
-    // EKLENDİ: Formu sayfanın tamamında ortalamak için ana sarmalayıcı
     <main className='min-h-screen w-full flex items-center justify-center bg-gray-100 p-4'>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        // DEĞİŞTİRİLDİ: Daha iyi boşluk ve sağlam genişlik için class'lar güncellendi
         className='bg-white shadow-lg rounded-2xl p-8 w-full max-w-md flex flex-col gap-6'
       >
         <div className='flex flex-col items-center text-center'>
@@ -73,14 +77,12 @@ export default function RegisterPage() {
             alt='Shovra Logo'
             width={80}
             height={80}
-            className='object-contain mb-4' // Logo ile başlık arasına boşluk eklendi
+            className='object-contain mb-4'
           />
           <h1 className='text-3xl font-bold text-gray-800'>Register</h1>
           <p className='text-gray-500 mt-2'>Create your account to get started.</p>
         </div>
-        {/* Başlık alanı (Yapısal değişiklik yok, zaten ortalı) */}
 
-        {/* Input alanı (Yapısal değişiklik yok) */}
         <div className=' flex flex-col justify-center space-y-4'>
           <div className='space-y-2'>
             <input
@@ -125,7 +127,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Button ve Link alanı (Yapısal değişiklik yok) */}
         <div className='space-y-4'>
           <button
             type='submit'

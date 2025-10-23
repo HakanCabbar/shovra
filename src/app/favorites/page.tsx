@@ -1,14 +1,27 @@
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import ProductCard from '../components/ui/ProductCard'
-import toast from 'react-hot-toast'
+// ** React And Hooks
 import { useState } from 'react'
-import { Button } from 'app/components/ui/button'
-import Link from 'next/link'
-import Image from 'next/image'
+
+// ** React Query
+import { useQueryClient } from '@tanstack/react-query'
+
+// ** App Context / Custom Hooks
 import { useApp } from '../providers'
 
+// ** Third-Party UI / Toast
+import toast from 'react-hot-toast'
+
+// ** Next.js Imports
+import Link from 'next/link'
+import Image from 'next/image'
+
+// ** Components
+import ProductCard from '../components/ui/ProductCard'
+import { Button } from '@/app/components/ui/Button'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** Types
 export type Product = {
   id: string
   name: string
@@ -20,27 +33,27 @@ export type Product = {
 }
 
 export default function FavoritesPage() {
-  const queryClient = useQueryClient()
+  // ** State Hooks
   const [cartLoadingIds, setCartLoadingIds] = useState<string[]>([])
   const [favoriteLoadingIds, setFavoriteLoadingIds] = useState<string[]>([])
 
-  const previousFavorites = queryClient.getQueryData<Product[]>(['favorites'])
+  // ** App / Custom Hooks
   const { user } = useApp()
 
+  // ** React Query Hooks
+  const queryClient = useQueryClient()
+  const previousFavorites = queryClient.getQueryData<Product[]>(['favorites'])
   const {
     data: products,
     isLoading,
     isError,
     refetch
-  } = useQuery<Product[]>({
+  } = useFetch<Product[]>({
     queryKey: ['favorites'],
-    queryFn: async () => {
-      const res = await fetch('/api/favorites', { cache: 'no-store' })
-      if (!res.ok) throw new Error('Failed to load favorites')
-      return res.json()
-    }
+    url: '/api/favorites'
   })
 
+  // ** Handlers
   const handleToggleCart = async (product: Product) => {
     if (!product) return
     try {
@@ -93,15 +106,19 @@ export default function FavoritesPage() {
     }
   }
 
+  // ** Error State
   if (isError) {
-    return <p className='text-center mt-10 text-red-600'>An error occurred while loading your favorites.</p>
+    return <p className='text-center mt-10 text-red-600'>An Error Occurred While Loading Your Favorites.</p>
   }
 
+  // ** Derived Values
   const skeletonCount = previousFavorites?.length || 6
 
+  // ** JSX / Return
   return (
     <main className='max-w-6xl mx-auto'>
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Favorites</h1>
+
       {isLoading ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
           {Array.from({ length: skeletonCount }).map((_, i) => (
@@ -111,9 +128,9 @@ export default function FavoritesPage() {
       ) : products?.length === 0 ? (
         <div className='flex flex-col items-center justify-center text-center mt-20 gap-4'>
           <Image src='/images/favorite-item.svg' alt='No favorite items' width={124} height={124} />
-          <h2 className='text-2xl font-semibold mb-2'>No favorite products yet 💔</h2>
+          <h2 className='text-2xl font-semibold mb-2'>No Favorite Products Yet 💔</h2>
           <p className='text-gray-500 max-w-sm mb-6'>
-            Add products you like to your favorites and they will appear here.
+            Add Products You Like To Your Favorites And They Will Appear Here.
           </p>
           <Link href='/home' className='px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all'>
             Browse Products
@@ -133,7 +150,7 @@ export default function FavoritesPage() {
                       loading={cartLoadingIds.includes(product.id)}
                       onClick={() => handleToggleCart(product)}
                     >
-                      {product.isInCart ? 'Remove From Cart' : 'Add to Cart'}
+                      {product.isInCart ? 'Remove From Cart' : 'Add To Cart'}
                     </Button>
 
                     <Button

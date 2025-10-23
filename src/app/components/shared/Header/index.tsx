@@ -1,12 +1,19 @@
 'use client'
 
+// ** React And Hooks
 import { useState, useEffect, useRef } from 'react'
-import { useApp } from '@/app/providers'
+
+// ** Next.js Imports
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+// ** Third-Party Libraries
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { FiMenu, FiX } from 'react-icons/fi'
-import Image from 'next/image'
+
+// ** App Context / Custom Hooks
+import { useApp } from '@/app/providers'
 
 export default function Header() {
   const { user, setUser } = useApp()
@@ -73,34 +80,19 @@ export default function Header() {
 
   return (
     <header className='bg-black text-white px-4 py-3 flex justify-between items-center relative'>
-      <Link
-        href='/home'
-        // DEĞİŞTİ: Logoyu ve metni hizalamak için flexbox eklendi
-        className='inline-flex items-center gap-3 transition-all duration-300 group' // 'group' anasıfını ekledik
-      >
+      <Link href='/home' className='inline-flex items-center gap-3 transition-all duration-300 group'>
         <Image
           src='/images/shovra-logo.png'
           alt='Shovra Logo'
           width={75}
           height={75}
-          // DEĞİŞTİ: Hover efekti artık 'group-hover' ile tetiklenecek
           className='bg-transparent group-hover:drop-shadow-[0_0_20px_white] transition-all duration-300'
         />
-
-        {/* EKLENDİ: Logo sağındaki metin */}
-        <span
-          className='
-      text-white text-3xl font-bold tracking-tight 
-      group-hover:text-gray-200 transition-colors duration-300
-    '
-          // 'text-3xl font-bold tracking-tight' "güzel font" görünümü için öneridir.
-          // Dilerseniz (text-2xl, font-semibold, vb.) değiştirebilirsiniz.
-        >
+        <span className='text-white text-3xl font-bold tracking-tight group-hover:text-gray-200 transition-colors duration-300'>
           Shovra
         </span>
       </Link>
 
-      {/* Hamburger Button */}
       <button
         onClick={() => setMenuOpen(prev => !prev)}
         className='lg:hidden text-white text-2xl focus:outline-none'
@@ -109,7 +101,6 @@ export default function Header() {
         {menuOpen ? <FiX /> : <FiMenu />}
       </button>
 
-      {/* Navigation */}
       <nav
         className={`${
           menuOpen
@@ -124,14 +115,14 @@ export default function Header() {
             <Link
               href='/favorites'
               onClick={() => setMenuOpen(false)}
-              className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+              className='hover:text-gray-300 transition font-bold tracking-tight text-base lg:text-lg'
             >
               Favorites
             </Link>
             <Link
               href='/cart'
               onClick={() => setMenuOpen(false)}
-              className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+              className='hover:text-gray-300 transition font-bold tracking-tight text-base lg:text-lg'
             >
               Cart
             </Link>
@@ -142,13 +133,12 @@ export default function Header() {
           <Link
             href='/admin/products/create'
             onClick={() => setMenuOpen(false)}
-            className='hover:text-gray-300 transition font-medium w-full lg:w-auto text-left whitespace-nowrap'
+            className='hover:text-gray-300 transition font-bold tracking-tight text-base lg:text-lg'
           >
             Create Product
           </Link>
         )}
 
-        {/* Account */}
         <div className='w-full lg:w-auto' ref={dropdownRef}>
           {user?.role ? (
             <div className='relative inline-block'>
@@ -161,7 +151,6 @@ export default function Header() {
                 {getInitials(user.name)}
               </button>
 
-              {/* Dropdown Box */}
               <div
                 className={`absolute mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200
                   ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
@@ -181,42 +170,16 @@ export default function Header() {
                       setDropdownOpen(false)
                       setMenuOpen(false)
                     }}
-                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-sm font-medium rounded-lg'
+                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-left font-bold tracking-tight text-base rounded-lg'
                   >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='w-4 h-4 text-gray-500'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        d='M5.121 17.804A9 9 0 1118.879 6.196 9 9 0 015.121 17.804z'
-                      />
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
-                    </svg>
-                    <span>Profile</span>
+                    Profile
                   </Link>
 
                   <button
                     onClick={handleLogout}
-                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-left text-sm font-medium w-full rounded-lg'
+                    className='flex items-center gap-2 px-5 py-2 hover:bg-gray-100 transition text-left font-bold tracking-tight text-base rounded-lg'
                   >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='w-4 h-4 text-gray-500'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7' />
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M7 8v8' />
-                    </svg>
-                    <span>Logout</span>
+                    Logout
                   </button>
                 </div>
               </div>
@@ -225,7 +188,7 @@ export default function Header() {
             <Link
               href='/auth/login'
               onClick={() => setMenuOpen(false)}
-              className='hover:text-gray-300 transition font-medium w-full text-left'
+              className='hover:text-gray-300 transition font-bold tracking-tight text-base'
             >
               Login
             </Link>

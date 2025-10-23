@@ -1,6 +1,9 @@
 'use client'
 
+// ** React And Hooks
 import { useState, useEffect } from 'react'
+
+// ** Next.js Imports
 import Image from 'next/image'
 
 interface BannerProps {
@@ -11,7 +14,6 @@ interface BannerProps {
 export default function Banner({ images, intervalMs = 4000 }: BannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  // 🔹 Auto-slide
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % images.length)

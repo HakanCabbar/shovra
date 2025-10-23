@@ -1,11 +1,14 @@
 'use client'
 
+// ** React Types
 import { ButtonHTMLAttributes, ReactNode } from 'react'
+
+// ** Third-Party Libraries
 import cn from 'classnames'
 import { FaSpinner } from 'react-icons/fa'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children?: ReactNode // artık opsiyonel
+  children?: ReactNode
   variant?: 'black' | 'red' | 'yellow'
   loading?: boolean
   icon?: ReactNode
@@ -28,7 +31,7 @@ export function Button({ children, variant = 'black', loading, icon, ...props }:
       )}
       disabled={props.disabled || loading}
       onClick={e => {
-        e.stopPropagation() // card click tetiklenmesini engelle
+        e.stopPropagation()
         props.onClick?.(e)
       }}
     >

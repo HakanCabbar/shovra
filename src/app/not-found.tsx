@@ -1,4 +1,4 @@
-// app/404/page.tsx
+// ** Next.js Imports
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -6,7 +6,6 @@ export default function NotFoundPage() {
   return (
     <main className=' h-full flex flex-col items-center justify-center bg-white text-center'>
       <div className='bg-white p-12 rounded-3xl shadow-md border border-gray-200 max-w-lg w-full flex flex-col items-center gap-6'>
-        {/* SVG Illustration */}
         <div className='w-48 h-48 relative'>
           <Image src='/images/404.svg' alt='Page Not Found' fill style={{ objectFit: 'contain' }} />
         </div>

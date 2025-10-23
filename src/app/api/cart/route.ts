@@ -34,8 +34,21 @@ export async function GET() {
 
     if (itemsError) throw itemsError
 
-    const totalQuantity = items.reduce((acc, i) => acc + i.quantity, 0)
-    const totalPrice = items.reduce((acc, i) => acc + i.quantity * (i.product[0]?.price ?? 0), 0)
+    const totalQuantity = (items || []).reduce((acc, i) => {
+      const qty = Number(i.quantity ?? 0)
+      return acc + (Number.isFinite(qty) ? qty : 0)
+    }, 0)
+
+    const totalPrice = (items || []).reduce((acc, i) => {
+      const prod = Array.isArray(i.product) ? i.product[0] : i.product
+      const price = Number(prod?.price ?? 0)
+      const qty = Number(i.quantity ?? 0)
+
+      const safePrice = Number.isFinite(price) ? price : 0
+      const safeQty = Number.isFinite(qty) ? qty : 0
+
+      return acc + safePrice * safeQty
+    }, 0)
 
     return NextResponse.json({
       id: cartId,
@@ -48,7 +61,6 @@ export async function GET() {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
-
 export async function PATCH(req: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies })

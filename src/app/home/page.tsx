@@ -1,16 +1,25 @@
 'use client'
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import { useApp } from '../providers'
-import ProductCard from '../components/ui/ProductCard'
+// ** React And Hooks
 import { useState, useRef, useEffect } from 'react'
-import { Button } from '../components/ui/button'
-import { Trash2 } from 'lucide-react'
-import Banner from '../components/ui/Banner'
-import { InlineSpinner } from '../components/ui/inline-spinner'
-import Link from 'next/link'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** Next.js Imports
 import Image from 'next/image'
+
+// ** App Context / Custom Hooks
+import { useApp } from '../providers'
+
+// ** Third-Party Libraries
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import { Trash2 } from 'lucide-react'
+
+// ** Components
+import ProductCard from '../components/ui/ProductCard'
+import { Button } from '../components/ui/Button'
+import Banner from '../components/ui/Banner'
+import { InlineSpinner } from '../components/ui/InlineSpinner'
 
 type Product = {
   id: string
@@ -37,22 +46,17 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string[]>([])
   const loaderRef = useRef<HTMLDivElement>(null)
 
-  // 🔹 Debounce search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search)
-    }, 400) // 400ms delay after typing stops
+    }, 400)
 
     return () => clearTimeout(handler)
   }, [search])
 
-  const { data: categories } = useQuery<Category[]>({
+  const { data: categories = [] } = useFetch<Category[]>({
     queryKey: ['categories'],
-    queryFn: async () => {
-      const res = await fetch('/api/categories')
-      if (!res.ok) throw new Error('Failed to load categories')
-      return res.json()
-    }
+    url: '/api/categories'
   })
 
   const deleteMutation = useMutation({
@@ -82,7 +86,6 @@ export default function ProductsPage() {
     })
   }
 
-  // 🔹 Products Infinite Query
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<
     Product[],
     Error
@@ -136,7 +139,6 @@ export default function ProductsPage() {
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Home</h1>
 
       <Banner images={bannerImages} />
-      {/* 🔹 Minimal Filter Panel */}
       <div className='flex flex-col gap-4 mb-6'>
         <div className='flex flex-wrap gap-2 mb-2 flex-col sm:flex-row'>
           {categories?.map(c => {
@@ -157,7 +159,6 @@ export default function ProductsPage() {
             )
           })}
 
-          {/* Clear Filters */}
           {(selectedCategory.length > 0 || debouncedSearch) && (
             <button
               onClick={() => {
@@ -172,7 +173,6 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* 🔹 Search Bar */}
         <input
           type='text'
           placeholder='Search products...'
@@ -215,7 +215,6 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* 🔹 Loader */}
       <div ref={loaderRef} className='text-center mt-4'>
         {isFetchingNextPage && <InlineSpinner />}
       </div>

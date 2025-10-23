@@ -1,10 +1,17 @@
-// app/layout.tsx
+// ** Styles / Assets
 import './styles/globals.css'
+
+// ** Components
 import Header from './components/shared/Header'
 import Footer from './components/shared/Footer'
+
+// ** Third-Party Libraries
 import { Toaster } from 'react-hot-toast'
+
+// ** Providers / Custom Hooks
 import Providers from './providers'
 
+// ** Next.js / Supabase
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 

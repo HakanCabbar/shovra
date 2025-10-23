@@ -1,8 +1,15 @@
 'use client'
 
+// ** Next.js Imports
 import Image from 'next/image'
+
+// ** Third-Party Libraries
 import { FaPlus, FaMinus, FaTrash, FaSpinner } from 'react-icons/fa'
+
+// ** Components
 import { CartItemSkeleton } from './CartItemSkeleton'
+
+// ** Types / App Imports
 import { CartItemType } from '@/app/cart/page'
 
 interface CartItemProps {

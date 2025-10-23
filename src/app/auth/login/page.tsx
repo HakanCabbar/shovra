@@ -1,14 +1,20 @@
 'use client'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+// ** React Hook Form
 import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { toast } from 'react-hot-toast'
+
+// ** Next.js imports
 import Link from 'next/link'
 import Image from 'next/image'
 
-// Yup validation schema (Değişiklik yok)
+// ** Validation
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+
+// ** Third-party libraries
+import { toast } from 'react-hot-toast'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
 const loginSchema = yup.object({
   email: yup.string().email('Enter a valid email').required('Email is required'),
   password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
@@ -27,50 +33,46 @@ export default function LoginPage() {
     resolver: yupResolver(loginSchema)
   })
 
-  // onSubmit fonksiyonu (Değişiklik yok)
   const onSubmit = async (formData: LoginFormInputs) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
 
-      if (error) {
-        toast.error(error.message)
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Login failed')
         return
       }
 
       toast.success('Login successful!')
-      window.location.href = '/home' // Başarılı giriş sonrası yönlendirme
+      window.location.href = '/home'
     } catch (err) {
       toast.error('An unexpected error occurred. Please try again.')
     }
   }
 
   return (
-    // EKLENDİ: Formu sayfanın tamamında ortalamak için bir ana sarmalayıcı
     <main className='min-h-screen w-full flex items-center justify-center bg-gray-100 p-4'>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        // DEĞİŞTİRİLDİ: Daha iyi boşluk ve sağlam genişlik için class'lar güncellendi
         className='bg-white shadow-lg rounded-2xl p-8 w-full max-w-md flex flex-col gap-6'
       >
-        {/* --- DEĞİŞTİRİLDİ: Logo ve Başlık --- */}
-        {/* Logo ve başlık metinleri ortalanmış tek bir blokta birleştirildi */}
         <div className='flex flex-col items-center text-center'>
           <Image
             src='/images/shovra-logo-black.png'
             alt='Shovra Logo'
             width={80}
             height={80}
-            className='object-contain mb-4' // Logo ile başlık arasına boşluk eklendi
+            className='object-contain mb-4'
           />
           <h1 className='text-3xl font-bold text-gray-800'>Login</h1>
           <p className='text-gray-500 mt-2'>Welcome back! Please login to your account.</p>
         </div>
-        {/* --- DEĞİŞİKLİK SONU --- */}
 
-        {/* Inputs (Yapısal değişiklik yok) */}
         <div className='flex flex-col justify-center space-y-4'>
           <div className='space-y-2'>
             <input
@@ -94,7 +96,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Button + Link (Yapısal değişiklik yok) */}
         <div className='space-y-4'>
           <button
             type='submit'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 const ProductDetailSkeleton = () => {
   return (
     <main className='max-w-6xl mx-auto animate-pulse'>

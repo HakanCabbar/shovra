@@ -1,4 +1,4 @@
-// app/403/page.tsx
+// ** Next.js imports
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -6,7 +6,6 @@ export default function ForbiddenPage() {
   return (
     <main className='h-full flex flex-col items-center justify-center bg-white px-4 text-center'>
       <div className='bg-white p-12 rounded-3xl shadow-md border border-red-200 max-w-lg w-full flex flex-col items-center gap-6'>
-        {/* SVG Illustration */}
         <div className='w-48 h-48 relative'>
           <Image src='/images/403.svg' alt='Access Denied' fill style={{ objectFit: 'contain' }} />
         </div>

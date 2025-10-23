@@ -1,14 +1,21 @@
-// CartPage.tsx
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+// ** React And Hooks
+import { useState } from 'react'
+import { useFetch } from '@/lib/hooks/useFetch'
+
+// ** Next.js Imports
+import Link from 'next/link'
+import Image from 'next/image'
+
+// ** Third-Party Libraries
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
 import { FaTrash } from 'react-icons/fa'
-import Link from 'next/link'
-import { useState } from 'react'
-import { Button } from '../components/ui/button'
+
+// ** Components
+import { Button } from '../components/ui/Button'
 import { CartItem } from '../components/ui/CartItem'
-import Image from 'next/image'
 
 type CartData = {
   id: string
@@ -43,16 +50,12 @@ export default function CartPage() {
 
   const {
     data: cart,
-    refetch,
     isLoading,
-    isError
-  } = useQuery<CartData>({
+    isError,
+    refetch
+  } = useFetch<CartData>({
     queryKey: ['cart'],
-    queryFn: async () => {
-      const res = await fetch('/api/cart')
-      if (!res.ok) throw new Error('Failed to fetch cart')
-      return res.json()
-    }
+    url: '/api/cart'
   })
 
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
@@ -75,7 +78,7 @@ export default function CartPage() {
     },
     onError: (err: any) => {
       toast.error(err.message || 'Something went wrong')
-    }, 
+    },
     onSettled: () => setLoadingItemId(null)
   })
 

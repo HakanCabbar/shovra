@@ -1,8 +1,13 @@
 'use client'
 
+// ** Next.js Imports
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+
+// ** Types / App Imports
 import { Product } from '../../favorites/page'
+
+// ** Components
 import ProductCardSkeleton from './ProductCardSkeleton'
 
 interface Props {

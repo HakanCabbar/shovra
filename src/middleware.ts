@@ -1,5 +1,8 @@
+// ** Next.js Imports
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+// ** App / Lib Imports
 import { PROTECTED_ROUTES } from './lib/protectedRoutes'
 
 export function middleware(req: NextRequest) {
