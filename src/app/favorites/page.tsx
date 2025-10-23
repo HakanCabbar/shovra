@@ -18,8 +18,8 @@ import Image from 'next/image'
 
 // ** Components
 import ProductCard from '../components/ui/ProductCard'
-import { Button } from '../components/ui/Button'
 import { useFetch } from '@/lib/hooks/useFetch'
+import { Button } from '../components/ui/Button'
 
 // ** Types
 export type Product = {

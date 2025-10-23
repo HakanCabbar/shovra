@@ -17,9 +17,9 @@ import { Trash2 } from 'lucide-react'
 
 // ** Components
 import ProductCard from '../components/ui/ProductCard'
-import { Button } from '../components/ui/Button'
 import Banner from '../components/ui/Banner'
 import { InlineSpinner } from '../components/ui/InlineSpinner'
+import { Button } from '../components/ui/Button'
 
 type Product = {
   id: string

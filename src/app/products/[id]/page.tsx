@@ -12,11 +12,11 @@ import { toast } from 'react-hot-toast'
 import { FaRegStar, FaShoppingCart, FaStar } from 'react-icons/fa'
 
 // ** Components
-import { Button } from '../../components/ui/Button'
 import ProductDetailSkeleton from '@/app/components/ui/ProductDetailSkeleton'
 
 // ** App Context / Custom Hooks
 import { useApp } from '@/app/providers'
+import { Button } from '@/app/components/ui/Button'
 
 type Category = {
   id: string

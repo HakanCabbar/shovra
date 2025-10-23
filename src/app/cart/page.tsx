@@ -14,8 +14,8 @@ import { toast } from 'react-hot-toast'
 import { FaTrash } from 'react-icons/fa'
 
 // ** Components
-import { Button } from '../components/ui/Button'
 import { CartItem } from '../components/ui/CartItem'
+import { Button } from '../components/ui/Button'
 
 // ** Types
 type CartData = {
