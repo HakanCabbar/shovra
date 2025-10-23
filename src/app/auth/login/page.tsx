@@ -15,6 +15,7 @@ import * as yup from 'yup'
 import { toast } from 'react-hot-toast'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
+// ** Validation schema
 const loginSchema = yup.object({
   email: yup.string().email('Enter a valid email').required('Email is required'),
   password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
@@ -23,8 +24,10 @@ const loginSchema = yup.object({
 type LoginFormInputs = yup.InferType<typeof loginSchema>
 
 export default function LoginPage() {
+  // ** Supabase client
   const supabase = createClientComponentClient()
 
+  // ** React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -33,6 +36,7 @@ export default function LoginPage() {
     resolver: yupResolver(loginSchema)
   })
 
+  // ** Handlers
   const onSubmit = async (formData: LoginFormInputs) => {
     try {
       const res = await fetch('/api/auth/login', {
@@ -55,6 +59,7 @@ export default function LoginPage() {
     }
   }
 
+  // ** JSX
   return (
     <main className='min-h-screen w-full flex items-center justify-center bg-gray-100 p-4'>
       <form

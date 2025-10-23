@@ -20,7 +20,7 @@ const variantClasses = {
   yellow: 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100'
 }
 
-export function Button({ children, variant = 'black', loading, icon, ...props }: ButtonProps) {
+export function Button({ children, variant = 'black', loading = false, icon, ...props }: ButtonProps) {
   return (
     <button
       {...props}

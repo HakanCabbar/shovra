@@ -40,12 +40,17 @@ interface Props {
 }
 
 export default function ProductDetailPage({ params }: Props) {
+  // ** State Hooks
   const [addingToCart, setAddingToCart] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+
+  // ** App / Custom Hooks
   const { user } = useApp()
 
+  // ** Params
   const { id } = params
 
+  // ** React Query / Fetch Hooks
   const {
     data: product,
     isLoading,
@@ -56,6 +61,7 @@ export default function ProductDetailPage({ params }: Props) {
     url: `/api/products/${id}`
   })
 
+  // ** Handlers
   const handleToggleCart = async () => {
     if (!product) return
     try {
@@ -100,27 +106,22 @@ export default function ProductDetailPage({ params }: Props) {
       })
 
       const data = await res.json()
-
       if (res.ok) {
         toast.success(data.message || (product.isProductFavorited ? 'Removed from favorites!' : 'Added to favorites!'))
         refetch()
       } else {
         toast.error(data.error || 'Failed to update favorites!')
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to update favorites!')
     } finally {
       setFavoriteLoading(false)
     }
   }
 
-  if (isLoading) {
-    return <ProductDetailSkeleton />
-  }
-
-  if (isError || !product) {
-    return <p className='text-center mt-10 text-red-600'>Product not found!</p>
-  }
+  // ** Error / Loading States
+  if (isLoading) return <ProductDetailSkeleton />
+  if (isError || !product) return <p className='text-center mt-10 text-red-600'>Product not found!</p>
 
   return (
     <main className='max-w-6xl mx-auto'>

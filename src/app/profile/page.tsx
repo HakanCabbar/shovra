@@ -33,8 +33,10 @@ type FormValues = {
 }
 
 export default function ProfilePage() {
+  // ** App / Custom Hooks
   const { user, setUser } = useApp()
 
+  // ** Form Hooks
   const {
     register,
     handleSubmit,
@@ -49,6 +51,7 @@ export default function ProfilePage() {
     }
   })
 
+  // ** Populate Form on User Load
   useEffect(() => {
     if (user) {
       reset({
@@ -59,6 +62,7 @@ export default function ProfilePage() {
     }
   }, [user, reset])
 
+  // ** Handlers
   const onSubmit: SubmitHandler<FormValues> = async data => {
     try {
       const updates: Partial<{ name: string; email: string }> = {}

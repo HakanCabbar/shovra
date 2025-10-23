@@ -38,27 +38,68 @@ type Category = {
 const PAGE_SIZE = 10
 
 export default function ProductsPage() {
-  const { user } = useApp()
-  const queryClient = useQueryClient()
+  // ** State Hooks
   const [deletingIds, setDeletingIds] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const [selectedCategory, setSelectedCategory] = useState<string[]>([])
+
+  // ** Refs
   const loaderRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 400)
+  // ** App / Custom Hooks
+  const { user } = useApp()
 
-    return () => clearTimeout(handler)
-  }, [search])
-
+  // ** React Query Hooks
+  const queryClient = useQueryClient()
   const { data: categories = [] } = useFetch<Category[]>({
     queryKey: ['categories'],
     url: '/api/categories'
   })
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<
+    Product[],
+    Error
+  >({
+    queryKey: ['products', selectedCategory, debouncedSearch],
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams()
+      params.append('skip', String(pageParam))
+      params.append('take', String(PAGE_SIZE))
 
+      if (selectedCategory.length) {
+        selectedCategory.forEach(cat => params.append('category', cat))
+      }
+      if (debouncedSearch) params.append('search', debouncedSearch)
+
+      const res = await fetch(`/api/products?${params.toString()}`)
+      if (!res.ok) throw new Error('Failed to load products')
+      return res.json()
+    },
+    getNextPageParam: (lastPage, allPages) => (lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined),
+    initialPageParam: 0
+  })
+
+  // ** Effects
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 400)
+    return () => clearTimeout(handler)
+  }, [search])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage) fetchNextPage()
+      },
+      { rootMargin: '200px' }
+    )
+    if (loaderRef.current) observer.observe(loaderRef.current)
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (loaderRef.current) observer.unobserve(loaderRef.current)
+    }
+  }, [fetchNextPage, hasNextPage])
+
+  // ** Mutations / Handlers
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch('/api/products', {
@@ -86,46 +127,7 @@ export default function ProductsPage() {
     })
   }
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<
-    Product[],
-    Error
-  >({
-    queryKey: ['products', selectedCategory, debouncedSearch],
-    queryFn: async ({ pageParam = 0 }) => {
-      const params = new URLSearchParams()
-      params.append('skip', String(pageParam))
-      params.append('take', String(PAGE_SIZE))
-
-      if (selectedCategory && selectedCategory.length > 0) {
-        selectedCategory.forEach(cat => params.append('category', cat))
-      }
-
-      if (debouncedSearch) params.append('search', debouncedSearch)
-
-      const res = await fetch(`/api/products?${params.toString()}`)
-      if (!res.ok) throw new Error('Failed to load products')
-      return res.json()
-    },
-    getNextPageParam: (lastPage, allPages) => (lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined),
-    initialPageParam: 0
-  })
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage()
-        }
-      },
-      { rootMargin: '200px' }
-    )
-    if (loaderRef.current) observer.observe(loaderRef.current)
-    return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      if (loaderRef.current) observer.unobserve(loaderRef.current)
-    }
-  }, [fetchNextPage, hasNextPage])
-
+  // ** Derived / Computed Values
   const bannerImages = [
     '/images/garden-supplies-banner.png',
     '/images/tech-banner.png',

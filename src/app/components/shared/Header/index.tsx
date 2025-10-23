@@ -1,9 +1,9 @@
 'use client'
 
-// ** React And Hooks
+// ** React & Hooks
 import { useState, useEffect, useRef } from 'react'
 
-// ** Next.js Imports
+// ** Next.js
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -12,48 +12,38 @@ import Image from 'next/image'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { FiMenu, FiX } from 'react-icons/fi'
 
-// ** App Context / Custom Hooks
+// ** App Context
 import { useApp } from '@/app/providers'
 
 export default function Header() {
+  // ** App / State Hooks
   const { user, setUser } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+
+  // ** Next.js / Supabase
   const router = useRouter()
   const supabase = createClientComponentClient()
 
+  // ** Effects
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false)
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const clearAllCookies = () => {
-    const cookies = document.cookie.split(';')
-    for (const cookie of cookies) {
-      const eqPos = cookie.indexOf('=')
-      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
-    }
-  }
-
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
+      await fetch('/api/auth/logout', { method: 'POST' })
     } catch (error) {
-      console.warn('supabase signOut hata:', error)
+      console.warn('Logout error:', error)
     } finally {
-      try {
-        clearAllCookies()
-      } catch (err) {
-        console.warn('cookie clear error:', err)
-      }
       setUser(null)
       setMenuOpen(false)
       router.push('/auth/login')
@@ -78,6 +68,7 @@ export default function Header() {
     return 'U'
   }
 
+  // ** Render
   return (
     <header className='bg-black text-white px-4 py-3 flex justify-between items-center relative'>
       <Link href='/home' className='inline-flex items-center gap-3 transition-all duration-300 group'>
@@ -148,14 +139,13 @@ export default function Header() {
                 aria-expanded={dropdownOpen}
                 className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-white font-medium hover:bg-purple-700 relative transition focus:outline-none'
               >
-                {getInitials(user.name)}
+                {getInitials(user.name, user.email)}
               </button>
 
               <div
                 className={`absolute mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200
                   ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
-                  left-0 lg:right-0 lg:left-auto 
-                `}
+                  left-0 lg:right-0 lg:left-auto`}
               >
                 <div className='px-5 pb-4 border-b border-gray-200 flex flex-col gap-1'>
                   {user.name && <p className='font-semibold text-sm text-gray-800 truncate'>{user.name}</p>}

@@ -39,8 +39,10 @@ const schema = yup.object({
 type FormValues = yup.InferType<typeof schema>
 
 export default function ProductForm() {
+  // ** Local state
   const [loading, setLoading] = useState(false)
 
+  // ** Fetch categories
   const {
     data: categories = [],
     isLoading,
@@ -50,6 +52,7 @@ export default function ProductForm() {
     url: '/api/categories'
   })
 
+  // ** React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -59,6 +62,7 @@ export default function ProductForm() {
     resolver: yupResolver(schema)
   })
 
+  // ** Handlers
   const onSubmit = async (data: FormValues) => {
     try {
       setLoading(true)
@@ -90,9 +94,11 @@ export default function ProductForm() {
     }
   }
 
+  // ** Loading & error states
   if (isLoading) return <p>Loading categories...</p>
   if (error) return <p className='text-red-500'>Failed to load categories</p>
 
+  // ** JSX
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
       <div>

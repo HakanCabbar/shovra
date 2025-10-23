@@ -1,6 +1,6 @@
 'use client'
 
-// ** React And Hooks
+// ** React and Hooks
 import { useState } from 'react'
 import { useFetch } from '@/lib/hooks/useFetch'
 
@@ -17,6 +17,7 @@ import { FaTrash } from 'react-icons/fa'
 import { Button } from '../components/ui/Button'
 import { CartItem } from '../components/ui/CartItem'
 
+// ** Types
 type CartData = {
   id: string
   items: CartItemType[]
@@ -48,6 +49,7 @@ export default function CartPage() {
   const queryClient = useQueryClient()
   const previousCart = queryClient.getQueryData<CartData>(['cart'])
 
+  // ** Fetch cart data
   const {
     data: cart,
     isLoading,
@@ -58,9 +60,11 @@ export default function CartPage() {
     url: '/api/cart'
   })
 
+  // ** Local states
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
   const [clearing, setClearing] = useState(false)
 
+  // ** Mutations
   const updateQuantity = useMutation({
     mutationFn: async ({ productId, action }: { productId: string; action: 'increase' | 'decrease' }) => {
       setLoadingItemId(productId)
@@ -84,7 +88,7 @@ export default function CartPage() {
 
   const removeItem = useMutation({
     mutationFn: async ({ cartItemId, productId }: RemoveItemParams) => {
-      setLoadingItemId(productId) // productId ile spinner
+      setLoadingItemId(productId)
       const res = await fetch('/api/cart-items', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -100,6 +104,7 @@ export default function CartPage() {
     onError: (err: any) => toast.error(err.message || 'Failed to remove item'),
     onSettled: () => setLoadingItemId(null)
   })
+
   const clearCart = useMutation({
     mutationFn: async () => {
       setClearing(true)
@@ -117,6 +122,7 @@ export default function CartPage() {
 
   const skeletonCount = previousCart?.items?.length || 3
 
+  // ** Error state
   if (!isLoading && (isError || !cart)) {
     return <p className='text-center mt-10 text-red-600'>Cart not found!</p>
   }
@@ -124,6 +130,7 @@ export default function CartPage() {
   return (
     <main className='max-w-6xl mx-auto'>
       <h1 className='text-2xl font-semibold mb-8 text-gray-800'>Cart</h1>
+
       {isLoading ? (
         <div className='flex flex-col gap-6'>
           {Array.from({ length: skeletonCount }).map((_, i) => (

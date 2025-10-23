@@ -15,6 +15,7 @@ import * as yup from 'yup'
 // ** Third-Party Utilities
 import { toast } from 'react-hot-toast'
 
+// ** Validation schema
 const registerSchema = yup
   .object({
     name: yup.string().min(2, 'Name must be at least 2 characters').required('Name is required'),
@@ -30,8 +31,10 @@ const registerSchema = yup
 type RegisterFormInputs = yup.InferType<typeof registerSchema>
 
 export default function RegisterPage() {
+  // ** Router
   const router = useRouter()
 
+  // ** React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -40,6 +43,7 @@ export default function RegisterPage() {
     resolver: yupResolver(registerSchema)
   })
 
+  // ** Handlers
   const onSubmit = async (data: RegisterFormInputs) => {
     try {
       const res = await fetch('/api/register', {
@@ -65,6 +69,7 @@ export default function RegisterPage() {
     }
   }
 
+  // ** JSX
   return (
     <main className='min-h-screen w-full flex items-center justify-center bg-gray-100 p-4'>
       <form
@@ -83,7 +88,7 @@ export default function RegisterPage() {
           <p className='text-gray-500 mt-2'>Create your account to get started.</p>
         </div>
 
-        <div className=' flex flex-col justify-center space-y-4'>
+        <div className='flex flex-col justify-center space-y-4'>
           <div className='space-y-2'>
             <input
               type='text'
