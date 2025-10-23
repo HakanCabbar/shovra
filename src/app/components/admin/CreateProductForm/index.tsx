@@ -71,7 +71,7 @@ export default function ProductForm({ categories }: Props) {
       toast.success('Product created successfully!')
       reset()
     } catch (err: any) {
-      console.error(err)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }

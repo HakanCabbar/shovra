@@ -1,20 +1,21 @@
-// app/api/profile/update/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, name, email, password } = body
+    const { email, password, name } = body
+    const supabase = createRouteHandlerClient({ cookies }) // session destekli client
 
-    if (!id) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    if (!email && !password && !name) {
+      return NextResponse.json({ error: 'At least one field is required' }, { status: 400 })
     }
 
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(id, {
+    const { data, error } = await supabase.auth.updateUser({
       email,
       password,
-      user_metadata: { name }
+      data: { name }
     })
 
     if (error) {

@@ -1,14 +1,17 @@
+// src/app/api/products/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const { id } = params
   const supabase = createRouteHandlerClient({ cookies })
+
+  // Auth session al
   const {
     data: { session }
   } = await supabase.auth.getSession()
-
   const userId = session?.user?.id
 
   try {
