@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+🛍️ Shovra
 
-## Getting Started
+Shovra is a modern, performance-oriented e-commerce platform built with Next.js (App Router), Supabase, and Prisma ORM.
+The entire project — from authentication to the admin panel — was developed from scratch by me with a focus on scalability, UX, and clean architecture.
 
-First, run the development server:
+🚀 Tech Stack
+Technology	Description
+Next.js 13 (App Router)	Server-side rendering, routing, and optimized performance
+TypeScript	Type-safe, maintainable, and scalable codebase
+Supabase	Authentication, database, and storage management
+Prisma ORM	Type-safe database access and schema modeling
+Tailwind CSS	Utility-first styling for fast UI development
+React Hook Form + Yup	Form handling and validation
+React Query (TanStack Query)	Server state and cache management
+Vercel	CI/CD and production hosting
+🧩 Features
+👤 User Side
 
-```bash
+🔐 Secure authentication via Supabase Auth
+
+🛒 Cart management — add, remove, and calculate totals
+
+💳 Order & checkout flow (supports integration with real or mock payment services)
+
+❤️ Add/remove favorites
+
+🌐 Fully responsive and modern UI
+
+⚙️ Admin Panel
+
+📦 Product CRUD operations
+
+🧾 Category management
+
+👥 User roles (Admin/User)
+
+🗑️ Soft delete and restore support
+
+🗄️ Database Schema (Example)
+
+The database is hosted on Supabase (PostgreSQL) and managed with Prisma.
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  name     String?
+  role     Role    @default(USER)
+  orders   Order[]
+}
+
+model Order {
+  id        String    @id @default(uuid())
+  userId    String
+  total     Float
+  status    String
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+⚡ Getting Started
+
+Clone the repository and install dependencies:
+
+# Clone the repository
+git clone https://github.com/HakanCabbar/shovra.git
+
+# Move into the project directory
+cd shovra
+
+# Install dependencies
+npm install
+
+
+Create an .env.local file in the project root:
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=
+
+
+Run the Prisma migrations:
+
+npx prisma migrate dev
+
+
+Start the development server:
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Visit the app at http://localhost:3000
+.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+🧠 Architecture Notes
 
-## Learn More
+Built with the Next.js App Router for clear server/client boundaries.
 
-To learn more about Next.js, take a look at the following resources:
+Uses Server Actions instead of traditional API routes for a cleaner flow.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Data fetching is optimized with React Query and server-side rendering.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Middleware-based role protection ensures secure routing.
 
-## Deploy on Vercel
+Dynamic imports and Vercel build optimization reduce TTFB and bundle size.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🌍 Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+The app is deployed on Vercel, with automatic builds and deployment via CI/CD.
+
+👨‍💻 Author
+
+Hakan CABBAR
+Frontend Developer — React & Next.js
+🎨 Focused on creating user-friendly, scalable, and high-performance interfaces.
+
+📄 License
+
+This project is not open-source.
+All rights reserved — © Hakan CABBAR.
