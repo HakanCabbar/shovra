@@ -88,9 +88,9 @@ npm install
 
 Create an .env.local file in the project root:
 
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-DATABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL='https://pjhybdodeugulrjtfcew.supabase.co'
+NEXT_PUBLIC_SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqaHliZG9kZXVndWxyanRmY2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NzA2NjQsImV4cCI6MjA3NjA0NjY2NH0.CFEVUl9om3qcmJzMtuJhNvXs3lMdPe0wgiiOCq1DYrE'
+DATABASE_URL='postgresql://postgres.pjhybdodeugulrjtfcew:shovra@aws-1-eu-west-3.pooler.supabase.com:5432/postgres'
 
 
 Run the Prisma migrations:
