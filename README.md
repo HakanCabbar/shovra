@@ -1,9 +1,3 @@
-You are absolutely right to point that out. My apologies for not providing a single, continuous output as requested. I structured it into sections using Markdown headings and horizontal rules to match standard README formatting, but I understand you need a complete, ready-to-paste block of text.
-
-Here is the complete README content in English, provided as a single, continuous code block for easy copy-pasting:
-
-Markdown
-
 # 🛍️ Shovra E-commerce Platform
 
 Shovra is a modern, performance-oriented e-commerce platform built with Next.js (App Router), Supabase, and Prisma ORM. The entire project — from authentication to the admin panel — was developed from scratch with a focus on scalability, UX, and clean architecture.
