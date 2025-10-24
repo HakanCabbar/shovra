@@ -144,8 +144,8 @@ export default function Header() {
 
               <div
                 className={`absolute mt-3 w-64 bg-white text-black rounded-xl shadow-lg py-4 z-50 transform transition-all duration-200
-                  ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
-                  left-0 lg:right-0 lg:left-auto`}
+          ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
+          left-0 lg:right-0 lg:left-auto`}
               >
                 <div className='px-5 pb-4 border-b border-gray-200 flex flex-col gap-1'>
                   {user.name && <p className='font-semibold text-sm text-gray-800 truncate'>{user.name}</p>}
@@ -175,13 +175,22 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <Link
-              href='/auth/login'
-              onClick={() => setMenuOpen(false)}
-              className='hover:text-gray-300 transition font-bold tracking-tight text-base'
-            >
-              Login
-            </Link>
+            <div className='flex items-center gap-4'>
+              <Link
+                href='/auth/login'
+                onClick={() => setMenuOpen(false)}
+                className='hover:text-gray-300 transition font-bold tracking-tight text-base'
+              >
+                Login
+              </Link>
+              <Link
+                href='/auth/register'
+                onClick={() => setMenuOpen(false)}
+                className='hover:text-gray-300 transition font-bold tracking-tight text-base'
+              >
+                Register
+              </Link>
+            </div>
           )}
         </div>
       </nav>
