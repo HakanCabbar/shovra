@@ -43,36 +43,65 @@ Shovra is a modern, performance-oriented e-commerce platform built with Next.js 
 The database is hosted on Supabase (PostgreSQL) and managed with Prisma.
 
 ```prisma
+model Category {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
 model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  description   String?
+  price         Float
+  imageUrl      String?
+  is_active     Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  categoryId    String          @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartItems     CartItem[]
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UserFavorites UserFavorites[]
 }
 
-model User {
-  id    String @id @default(uuid())
-  email String @unique
-  name  String?
-  role  Role   @default(USER)
-  orders Order[]
-}
-
-model Order {
-  id        String   @id @default(uuid())
-  userId    String
-  total     Float
-  status    String
+model Roles {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
 }
 
-enum Role {
-  USER
-  ADMIN
+model UserRoles {
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+}
+
+model Cart {
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @db.Uuid
+  totalPrice    Float      @default(0)
+  totalQuantity Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  items         CartItem[] @relation("CartItems")
+}
+
+model CartItem {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String  @db.Uuid
+  productId String  @db.Uuid
+  quantity  Int     @default(1)
+  cart      Cart    @relation("CartItems", fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model UserFavorites {
+  id        String   @id(map: "Favorite_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Favorite_productId_fkey")
 }
 ⚡ Getting Started
 Clone the repository and install dependencies:
